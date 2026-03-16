@@ -15,7 +15,9 @@ const CategoryContainer = () => {
     addToCart,
     updateQty,
     deleteCartItem,
-    getCart
+    getCart,
+    mainCatalogues,
+    getMainCatalogues
   } = orderingStore();
 
   const { cmsData } = useCmsStore();
@@ -26,9 +28,11 @@ const CategoryContainer = () => {
   /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
+    getMainCatalogues()
     getCatalogModels();
     getCart();
   }, []);
+
 
   /* ================= CMS FORMAT ================= */
 
@@ -133,6 +137,7 @@ const handleAdd = async (item) => {
         onIncrease={handleIncrease}
         onDecrease={handleDecrease}
         uiConfig={categoryUiConfig}
+        mainCatalogues={mainCatalogues}
       />
     </View>
   );

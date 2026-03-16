@@ -21,6 +21,7 @@ const orderingStore = create((set, get) => ({
   loyaltySettings: null,
   couponCodeResponse:null,
   orderHistoryResponse:null,
+  mainCatalogues:null,
 
   /* ======================================================
      📦 GET CATALOG MODELS
@@ -232,6 +233,28 @@ apply_coupon: async (coupon_code, amount) => {
     }
   },
 
+    getMainCatalogues: async () => {
+    set({ loading: true, errorMessage: null });
+
+    try {
+      const res = await apiClient.get(apiClient.Urls.getMainCatalogues);
+
+      if (res?.success) {
+        set({ mainCatalogues: res.data || [] });
+      } else {
+        set({
+          merchantData: [],
+          errorMessage: res?.message || "mainCatalogues empty",
+        });
+      }
+    } catch (err) {
+      console.log("mainCatalogues error", err);
+
+      set({ errorMessage: err.message });
+    } finally {
+      set({ loading: false });
+    }
+  },
   /* ======================================================
      ➕ ADD TO CART
   ====================================================== */

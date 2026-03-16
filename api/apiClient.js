@@ -42,6 +42,7 @@ const URLS = {
   getLoyaltySettings: BASE_URL + "get_loyalty_settings.php",
   apply_coupon: BASE_URL + "apply_coupon.php",
   order_history: BASE_URL + "order_history.php",
+  getMainCatalogues: BASE_URL + "getMainCatalogues"
 };
 
 /* ================= API CLIENT ================= */
