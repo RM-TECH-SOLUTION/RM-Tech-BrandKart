@@ -250,7 +250,9 @@ console.log(item?.compare_price,"itemgjhgjfi");
     )}
 
     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-  <Text style={dynamicStyles.priceText}>
+  <Text style={
+{color:uiConfig?.primaryColor || "#000",fontSize:16,fontWeight:"bold",marginTop:4}
+}>
     ₹{activeVariant?.price || item.price}
   </Text>
     {(activeVariant?.compare_price || item?.compare_price) && (
