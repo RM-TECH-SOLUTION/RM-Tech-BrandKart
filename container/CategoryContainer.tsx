@@ -138,6 +138,7 @@ const handleAdd = async (item) => {
         onDecrease={handleDecrease}
         uiConfig={categoryUiConfig}
         mainCatalogues={mainCatalogues}
+        cartItems={cartItems}
       />
     </View>
   );

@@ -35,7 +35,8 @@ const CategoryListComponent = ({
   onIncrease,
   onDecrease,
   loadingItems,
-  mainCatalogues = []
+  mainCatalogues = [],
+  cartItems
 }) => {
 
   const navigation = useNavigation();
@@ -59,7 +60,11 @@ const CategoryListComponent = ({
     (width - 42 - (gridColumns - 1) * 12) / gridColumns;
 
   const dynamicStyles = styles(uiConfig, CARD_WIDTH);
-  const pdpQty = cartMap[selectedProduct?.id]?.quantity || 0;
+  const pdpQty = cartMap[
+  selectedVariant?.id
+    ? `${selectedProduct?.id}_${selectedVariant?.id}`
+    : `${selectedProduct?.id}`
+]?.quantity || 0;
 
   /* ================= OPEN POPUP ================= */
 
@@ -90,7 +95,15 @@ const CategoryListComponent = ({
 
   }, [selectedMainCatalogue, CATEGORIES]);
 
-  const getQty = (id) => cartMap[id]?.quantity || 0;
+const getQty = (productId, variantId) => {
+
+  const key = variantId
+    ? `${productId}_${variantId}`
+    : `${productId}`;
+
+  return cartMap[key]?.quantity || 0;
+
+};
 
   /* ================= SELECT CATEGORY ================= */
 
@@ -152,10 +165,41 @@ const CategoryListComponent = ({
   );
 
   /* ================= ITEM CARD ================= */
+const getVariantInCart = (product) => {
+
+  if (!product?.variants?.length) return null;
+
+  const keys = Object.keys(cartMap);
+
+  const productKeys = keys.filter(k =>
+    k.startsWith(`${product.id}_`)
+  );
+
+  if (!productKeys.length) return product.variants[0];
+
+  const lastKey = productKeys[productKeys.length - 1];
+
+  const variantId = Number(lastKey.split("_")[1]);
+
+  return product.variants.find(v => v.id === variantId);
+
+};
+
+const isItemInCart = (itemId) => {
+  return cartItems?.some(c => Number(c.item_id) === Number(itemId));
+};
 
   const renderItemCard = (item) => {
 
-    const qty = getQty(item.id);
+const activeVariant = getVariantInCart(item);
+const inCart = isItemInCart(item.id);
+
+const qty = getQty(
+  item.id,
+  activeVariant?.id || null
+);
+console.log(item?.compare_price,"itemgjhgjfi");
+
 
     const isOutOfStock =
       item?.variants?.length > 0
@@ -169,11 +213,12 @@ const CategoryListComponent = ({
         {getImageUri(item) && (
 
           <TouchableOpacity
-            onPress={() => {
-              setSelectedProduct(item);
-              setSelectedVariant(item.variants[0]);
-              setPdpVisible(true);
-            }}
+           onPress={() => {
+  setSelectedProduct(item);
+  const lastVariant = getVariantInCart(item);
+  setSelectedVariant(lastVariant || item.variants[0]);
+  setPdpVisible(true);
+}}
           >
 
             <Image
@@ -184,84 +229,110 @@ const CategoryListComponent = ({
           </TouchableOpacity>
 
         )}
+        <View style={{flex: 1, justifyContent: "space-between" }}>
+
+  <TouchableOpacity
+    onPress={() => {
+      setSelectedProduct(item);
+      const lastVariant = getVariantInCart(item);
+      setSelectedVariant(lastVariant || item.variants[0]);
+      setPdpVisible(true);
+    }}
+  >
+    <Text numberOfLines={2} style={dynamicStyles.cardText}>
+      {item.name}
+    </Text>
+
+    {item.stock && (
+      <Text style={dynamicStyles.cardText}>
+        Stock-{item.stock}
+      </Text>
+    )}
+
+    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+  <Text style={dynamicStyles.priceText}>
+    ₹{activeVariant?.price || item.price}
+  </Text>
+    {(activeVariant?.compare_price || item?.compare_price) && (
+    <Text
+      style={{
+        color: "#888",
+        textDecorationLine: "line-through",
+        marginLeft:6
+      }}
+    >
+      ₹{activeVariant?.compare_price || item?.compare_price}
+    </Text>
+  )}
+
+</View>
+  </TouchableOpacity>
+
+  <View style={{ marginTop: 10 }}>
+
+    {isOutOfStock ? (
+
+      <View style={dynamicStyles.outOfStock}>
+        <Text style={dynamicStyles.outText}>
+          OUT OF STOCK
+        </Text>
+      </View>
+
+    ) : qty === 0 ? (
+
+      <TouchableOpacity
+        style={dynamicStyles.addButton}
+        onPress={() => {
+          setSelectedProduct(item);
+          const lastVariant = getVariantInCart(item);
+          setSelectedVariant(lastVariant || item?.variants?.[0] || null);
+          setPdpVisible(true);
+        }}
+      >
+        <Text style={dynamicStyles.addButtonText}>
+          {inCart ? "ADD MORE" : "ADD"}
+        </Text>
+      </TouchableOpacity>
+
+    ) : (
+
+      <View style={dynamicStyles.qtyContainer}>
 
         <TouchableOpacity
-          onPress={() => {
-            setSelectedProduct(item);
-            setSelectedVariant(item.variants[0]);
-            setPdpVisible(true);
-          }}
+          style={dynamicStyles.qtyButton}
+          onPress={() =>
+            onDecrease({
+              ...item,
+              variant: activeVariant
+            })
+          }
         >
-          <Text numberOfLines={2} style={dynamicStyles.cardText}>
-            {item.name}
-          </Text>
-
-          <Text style={dynamicStyles.priceText}>
-            ₹{item.price}
-          </Text>
+          <Text style={dynamicStyles.qtyText}>-</Text>
         </TouchableOpacity>
 
-        {isOutOfStock ? (
+        <Text style={dynamicStyles.qtyValue}>
+          {qty}
+        </Text>
 
-          <View style={dynamicStyles.outOfStock}>
-            <Text style={dynamicStyles.outText}>
-              OUT OF STOCK
-            </Text>
-          </View>
+        <TouchableOpacity
+          style={dynamicStyles.qtyButton}
+          onPress={() =>
+            onIncrease({
+              ...item,
+              variant: activeVariant
+            })
+          }
+        >
+          <Text style={dynamicStyles.qtyText}>+</Text>
+        </TouchableOpacity>
 
-        ) : qty === 0 ? (
+      </View>
 
-          <TouchableOpacity
-            style={dynamicStyles.addButton}
-            onPress={() => {
+    )}
 
-              if (qty == 0) {
+  </View>
 
-                setSelectedProduct(item);
-                setSelectedVariant(item.variants[0]);
-                setPdpVisible(true);
-
-              } else {
-
-                onAdd && onAdd(item);
-
-              }
-
-            }}
-          >
-
-            <Text style={dynamicStyles.addButtonText}>
-              ADD
-            </Text>
-
-          </TouchableOpacity>
-
-        ) : (
-
-          <View style={dynamicStyles.qtyContainer}>
-
-            <TouchableOpacity
-              style={dynamicStyles.qtyButton}
-              onPress={() => onDecrease(item)}
-            >
-              <Text style={dynamicStyles.qtyText}>-</Text>
-            </TouchableOpacity>
-
-            <Text style={dynamicStyles.qtyValue}>
-              {qty}
-            </Text>
-
-            <TouchableOpacity
-              style={dynamicStyles.qtyButton}
-              onPress={() => onIncrease(item)}
-            >
-              <Text style={dynamicStyles.qtyText}>+</Text>
-            </TouchableOpacity>
-
-          </View>
-
-        )}
-
+</View>
       </View>
 
     );
@@ -531,7 +602,7 @@ const CategoryListComponent = ({
                         )}
 
                       </View>
-                      <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock}</Text>
+                      <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock ||selectedProduct?.stock }</Text>
 
                       {/* VARIANTS */}
                       {console.log(selectedProduct.variants, "selectedProduct.variants")}
@@ -674,21 +745,29 @@ const CategoryListComponent = ({
 
                   if (selectedVariant?.stock === 0) return;
 
-                  if (pdpQty === 0) {
+                const cartKey = selectedVariant?.id
+  ? `${selectedProduct?.id}_${selectedVariant?.id}`
+  : `${selectedProduct?.id}`;
 
-                    onAdd && onAdd({
-                      ...selectedProduct,
-                      variant: selectedVariant
-                    });
+if (pdpQty === 0) {
 
-                  } else {
+  onAdd &&
+    onAdd({
+      ...selectedProduct,
+      variant: selectedVariant,
+      cartKey
+    });
 
-                    onIncrease && onIncrease({
-                      ...selectedProduct,
-                      variant: selectedVariant
-                    });
+} else {
 
-                  }
+  onIncrease &&
+    onIncrease({
+      ...selectedProduct,
+      variant: selectedVariant,
+      cartKey
+    });
+
+}
 
                   setPdpVisible(false);
                   setShowFullSpec(false);
