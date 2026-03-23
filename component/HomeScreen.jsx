@@ -9,9 +9,14 @@ import {
   FlatList,
   Dimensions,
   Animated,
+  PermissionsAndroid,
+  Platform,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import GreetingComponent from "./GreetingComponent";
+import messaging from "@react-native-firebase/messaging";
+import useSessionStore from "../store/useSessionStore";
 
 const { width } = Dimensions.get("window");
 
@@ -25,8 +30,110 @@ export default function HomeScreen({
   const sliderRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { user } = useSessionStore();
 
-  /* AUTO HERO SLIDER */
+  /* ================= PERMISSION ================= */
+  useEffect(() => {
+    const requestPermission = async () => {
+      if (Platform.OS === "android" && Platform.Version >= 33) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+      }
+
+      await messaging().requestPermission();
+    };
+
+    requestPermission();
+  }, []);
+
+  /* ================= REGISTER FCM ================= */
+  const registerFCM = async (userId) => {
+    try {
+      const token = await messaging().getToken();
+      console.log("FCM TOKEN:", token);
+
+      await fetch("https://api.rmtechsolution.com/saveToken.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          token: token,
+        }),
+      });
+    } catch (err) {
+      console.log("FCM Error:", err);
+    }
+  };
+
+  /* ================= CALL REGISTER ================= */
+  useEffect(() => {
+    if (user?.id) {
+      registerFCM(user.id);
+    }
+  }, [user?.id]);
+
+  /* ================= TOKEN REFRESH ================= */
+  useEffect(() => {
+    const unsubscribe = messaging().onTokenRefresh((token) => {
+      console.log("New Token:", token);
+
+      fetch("https://api.rmtechsolution.com/saveToken.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user?.id,
+          token: token,
+        }),
+      });
+    });
+
+    return unsubscribe;
+  }, [user?.id]);
+
+  /* ================= FOREGROUND ================= */
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      console.log("Foreground:", remoteMessage);
+
+      Alert.alert(
+        remoteMessage?.notification?.title || "Notification",
+        remoteMessage?.notification?.body || ""
+      );
+    });
+
+    return unsubscribe;
+  }, []);
+
+  /* ================= CLICK HANDLING ================= */
+  useEffect(() => {
+    // Background click
+    const unsubscribe = messaging().onNotificationOpenedApp(
+      (remoteMessage) => {
+        console.log("Opened from background:", remoteMessage);
+
+        navigation.navigate("Home"); // change if needed
+      }
+    );
+
+    // App opened from quit
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage) => {
+        if (remoteMessage) {
+          console.log("Opened from quit:", remoteMessage);
+          navigation.navigate("Home");
+        }
+      });
+
+    return unsubscribe;
+  }, []);
+
+  /* ================= AUTO SLIDER ================= */
   useEffect(() => {
     if (!homeBanner?.length) return;
 
@@ -45,19 +152,18 @@ export default function HomeScreen({
     return () => clearInterval(interval);
   }, [currentIndex, homeBanner?.length]);
 
+  /* ================= UI ================= */
   return (
     <ScrollView
       style={{
         flex: 1,
-        backgroundColor:
-          uiConfig?.homeBgColor || "#0B0B0F",
+        backgroundColor: uiConfig?.homeBgColor || "#0B0B0F",
       }}
       showsVerticalScrollIndicator={false}
     >
-         <GreetingComponent
-    greetingConfig={greetingConfig}
-  />
-      {/* ================= HERO ================= */}
+      <GreetingComponent greetingConfig={greetingConfig} />
+
+      {/* HERO */}
       {homeBanner?.length > 0 && (
         <View>
           <Animated.FlatList
@@ -79,24 +185,14 @@ export default function HomeScreen({
             }}
             renderItem={({ item }) => (
               <View style={styles.heroSlide}>
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.heroImage}
-                />
-
-                {/* Dark Gradient Overlay */}
+                <Image source={{ uri: item.image }} style={styles.heroImage} />
                 <View style={styles.heroOverlay} />
 
-                {/* Text */}
                 <View style={styles.heroContent}>
-                  <Text style={styles.heroTitle}>
-                    {item.title}
-                  </Text>
+                  <Text style={styles.heroTitle}>{item.title}</Text>
 
                   {item.subTitle && (
-                    <Text style={styles.heroSub}>
-                      {item.subTitle}
-                    </Text>
+                    <Text style={styles.heroSub}>{item.subTitle}</Text>
                   )}
 
                   {item.linkText && (
@@ -104,9 +200,7 @@ export default function HomeScreen({
                       style={styles.heroButton}
                       onPress={() => {
                         if (item.inAppPathRedirect) {
-                          navigation.navigate(
-                            item.inAppPathRedirect
-                          );
+                          navigation.navigate(item.inAppPathRedirect);
                         }
                       }}
                     >
@@ -120,7 +214,6 @@ export default function HomeScreen({
             )}
           />
 
-          {/* Animated Indicator */}
           <View style={styles.indicatorContainer}>
             {homeBanner.map((_, index) => {
               const widthAnim = scrollX.interpolate({
@@ -141,9 +234,7 @@ export default function HomeScreen({
                     {
                       width: widthAnim,
                       backgroundColor:
-                        index === currentIndex
-                          ? "#E50914"
-                          : "#444",
+                        index === currentIndex ? "#E50914" : "#444",
                     },
                   ]}
                 />
@@ -153,12 +244,10 @@ export default function HomeScreen({
         </View>
       )}
 
-      {/* ================= CTA SECTION ================= */}
+      {/* CTA */}
       {homeSlider?.length > 0 && (
         <View style={styles.ctaWrapper}>
-          <Text style={styles.sectionTitle}>
-            Quick Actions
-          </Text>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
 
           <FlatList
             data={homeSlider}
@@ -168,32 +257,21 @@ export default function HomeScreen({
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.ctaCard}
-                activeOpacity={0.9}
                 onPress={() => {
                   if (item.inAppPathRedirect) {
-                    navigation.navigate(
-                      item.inAppPathRedirect
-                    );
+                    navigation.navigate(item.inAppPathRedirect);
                   }
                 }}
               >
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.ctaImage}
-                />
-
+                <Image source={{ uri: item.image }} style={styles.ctaImage} />
                 <View style={styles.ctaOverlay} />
-
-                <Text style={styles.ctaTitle}>
-                  {item.title}
-                </Text>
+                <Text style={styles.ctaTitle}>{item.title}</Text>
               </TouchableOpacity>
             )}
           />
         </View>
       )}
 
-      {/* Premium Spacing */}
       <View style={{ height: 40 }} />
     </ScrollView>
   );
@@ -202,56 +280,25 @@ export default function HomeScreen({
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  heroSlide: {
-    width,
-    height: 300,
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
+  heroSlide: { width, height: 300 },
+  heroImage: { width: "100%", height: "100%" },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.55)",
   },
-  heroContent: {
-    position: "absolute",
-    bottom: 40,
-    left: 24,
-    right: 24,
-  },
-  heroTitle: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
-  },
-  heroSub: {
-    color: "#ccc",
-    marginTop: 6,
-    fontSize: 14,
-  },
+  heroContent: { position: "absolute", bottom: 40, left: 24, right: 24 },
+  heroTitle: { color: "#fff", fontSize: 26, fontWeight: "bold" },
+  heroSub: { color: "#ccc", marginTop: 6, fontSize: 14 },
   heroButton: {
     marginTop: 16,
     backgroundColor: "#E50914",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
-    alignSelf: "flex-start",
   },
-  heroButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  indicatorContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 10,
-  },
-  indicator: {
-    height: 6,
-    borderRadius: 6,
-    marginHorizontal: 4,
-  },
+  heroButtonText: { color: "#fff", fontWeight: "bold" },
+  indicatorContainer: { flexDirection: "row", justifyContent: "center" },
+  indicator: { height: 6, borderRadius: 6, marginHorizontal: 4 },
   sectionTitle: {
     color: "#fff",
     fontSize: 18,
@@ -259,9 +306,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginBottom: 16,
   },
-  ctaWrapper: {
-    marginTop: 24,
-  },
+  ctaWrapper: { marginTop: 24 },
   ctaCard: {
     width: 160,
     height: 160,
@@ -269,10 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
   },
-  ctaImage: {
-    width: "100%",
-    height: "100%",
-  },
+  ctaImage: { width: "100%", height: "100%" },
   ctaOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -281,9 +323,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 16,
     left: 16,
-    right: 16,
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 14,
   },
 });

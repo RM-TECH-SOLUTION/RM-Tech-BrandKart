@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453975421966",
+    "project_id": "rmtech-app",
+    "storage_bucket": "rmtech-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453975421966:android:270a3b5529591c84cef85f",
+        "android_client_info": {
+          "package_name": "com.rmtechsolution.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDYrL6iGaPoK8FbBMKA8oT_pHucDUY9PM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

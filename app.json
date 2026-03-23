@@ -6,50 +6,68 @@
     "orientation": "portrait",
     "icon": "./assets/prototype_logo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+
     "splash": {
       "image": "./assets/prototype_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rmtechsolution.prototypeapp",
+      "bundleIdentifier": "com.rmtechsolution.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/prototype_logo.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.rmtechsolution.prototypeapp",
-      "permissions": [
+
+  "android": {
+  "package": "com.rmtechsolution.app",
+  "googleServicesFile": "./google-services.json",
+
+  "adaptiveIcon": {
+    "foregroundImage": "./assets/prototype_logo.png",
+    "backgroundColor": "#ffffff"
+  },
+
+  "notification": {
+    "icon": "./assets/prototype_logo.png",
+    "color": "#ffffff"
+  },
+
+  "permissions": [
+    "POST_NOTIFICATIONS",
+    "INTERNET",
     "BLUETOOTH",
     "BLUETOOTH_ADMIN",
     "BLUETOOTH_CONNECT",
     "BLUETOOTH_SCAN"
   ]
-    },
-    "web": {
-      "favicon": "./assets/prototype_logo.png"
-    },
+},
+
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
+    ],
+
     "extra": {
       "eas": {
         "projectId": "eaa2e69a-390e-40a4-a107-2718d48a50fe"
       }
     },
+
     "owner": "rm-tech-solution",
+
     "runtimeVersion": {
       "policy": "appVersion"
     },
+
     "updates": {
-      "url": "https://u.expo.dev/eaa2e69a-390e-40a4-a107-2718d48a50fe"
+      "url": "https://u.expo.dev/eaa2e69a-390e-40a4-a107-2718d48a50fe",
+       "enabled": true,
+  "checkAutomatically": "ON_LOAD"
     },
-    "rmtech": {
+      "rmtech": {
       "merchantId":"9",
       "baseUrl":"https://api.rmtechsolution.com/"
     }
