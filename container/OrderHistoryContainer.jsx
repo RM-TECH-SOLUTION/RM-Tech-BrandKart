@@ -32,7 +32,7 @@ const OrderHistoryContainer = ({ navigation }) => {
         setUiConfig(formatted);
       }, [cmsData]);
 
-      console.log(uiConfig,"uiConfiguiConfighhh");
+      // console.log(uiConfig,"uiConfiguiConfighhh");
       
     
 

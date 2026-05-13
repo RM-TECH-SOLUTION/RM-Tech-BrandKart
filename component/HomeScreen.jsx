@@ -20,6 +20,39 @@ import useSessionStore from "../store/useSessionStore";
 
 const { width } = Dimensions.get("window");
 
+const REDIRECT_ROUTE_MAP = {
+  "/": "Home",
+  "/home": "Home",
+  "/categories": "Order",
+  "/category": "Order",
+  "/checkout": "Checkout",
+  "/account": "Account",
+  "/saved-address": "SavedAddressComponent",
+  "/order-history": "OrderHistoryContainer",
+  "/merchant-info": "MerchantInfoContainer",
+  auth: "Auth",
+  home: "Home",
+  order: "Order",
+  account: "Account",
+  checkout: "Checkout",
+  register: "Register",
+};
+
+const resolveNavigationTarget = (target) => {
+  if (!target || typeof target !== "string") {
+    return null;
+  }
+
+  const normalizedTarget = target.trim();
+  const normalizedKey = normalizedTarget.toLowerCase();
+
+  return (
+    REDIRECT_ROUTE_MAP[normalizedTarget] ||
+    REDIRECT_ROUTE_MAP[normalizedKey] ||
+    normalizedTarget
+  );
+};
+
 export default function HomeScreen({
   uiConfig = {},
   homeBanner = [],
@@ -31,6 +64,14 @@ export default function HomeScreen({
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
   const { user } = useSessionStore();
+
+  const navigateToRedirectTarget = (target) => {
+    const routeName = resolveNavigationTarget(target);
+
+    if (routeName) {
+      navigation.navigate(routeName);
+    }
+  };
 
   /* ================= PERMISSION ================= */
   useEffect(() => {
@@ -199,9 +240,7 @@ export default function HomeScreen({
                     <TouchableOpacity
                       style={styles.heroButton}
                       onPress={() => {
-                        if (item.inAppPathRedirect) {
-                          navigation.navigate(item.inAppPathRedirect);
-                        }
+                        navigateToRedirectTarget(item.inAppPathRedirect);
                       }}
                     >
                       <Text style={styles.heroButtonText}>
@@ -258,9 +297,7 @@ export default function HomeScreen({
               <TouchableOpacity
                 style={styles.ctaCard}
                 onPress={() => {
-                  if (item.inAppPathRedirect) {
-                    navigation.navigate(item.inAppPathRedirect);
-                  }
+                  navigateToRedirectTarget(item.inAppPathRedirect);
                 }}
               >
                 <Image source={{ uri: item.image }} style={styles.ctaImage} />

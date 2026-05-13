@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Image,
@@ -14,62 +14,97 @@ import orderingStore from "../store/orderingStore";
 export default function CustomHeader({ uiConfig }) {
   const navigation = useNavigation();
   const { cartItems } = orderingStore();
+  const [logoAspectRatio, setLogoAspectRatio] = useState(3);
 
   const cartLength = cartItems.length;
+  const logoHeight = logoAspectRatio < 1.2 ? 34 : logoAspectRatio < 2.5 ? 120: 28;
 
   return (
     <SafeAreaView
+      edges={["top"]}
       style={[
-        styles.container,
+        styles.safeArea,
         {
           backgroundColor: uiConfig?.headerBgColor || "#000",
         },
       ]}
     >
-      <Image
-        source={
-          uiConfig?.headerLogo
-            ? { uri: uiConfig.headerLogo }
-            : require("../assets/AR-Fashion.png")
-        }
-        style={styles.logo}
-      />
+      <View style={styles.row}>
+        <View style={styles.sideSpacer} />
 
-      <TouchableOpacity
-        style={styles.cartContainer}
-        onPress={() => navigation.navigate("Checkout")}
-      >
-        <Ionicons
-          name="cart-outline"
-          size={26}
-          color={uiConfig?.headerIconColor || "#E50914"}
-        />
+        <TouchableOpacity
+          style={styles.logoContainer}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Image
+            source={
+              uiConfig?.headerLogo
+                ? { uri: uiConfig.headerLogo }
+                : require("../assets/AR-Fashion.png")
+            }
+            style={[styles.logo, { aspectRatio: logoAspectRatio, height: logoHeight }]}
+            onLoad={(event) => {
+              const { width, height } = event.nativeEvent.source || {};
+              if (width && height) {
+                setLogoAspectRatio(width / height);
+              }
+            }}
+          />
+        </TouchableOpacity>
 
-        {cartLength > 0 && (
-          <View style={[styles.badge,{backgroundColor:"#000",borderWidth:1,borderColor:uiConfig?.headerIconColor}]}>
-            <Text style={{color:uiConfig?.headerIconColor}}>{cartLength}</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cartContainer}
+          onPress={() => navigation.navigate("Checkout")}
+        >
+          <Ionicons
+            name="cart-outline"
+            size={26}
+            color={uiConfig?.headerIconColor || "#E50914"}
+          />
+
+          {cartLength > 0 && (
+            <View style={[styles.badge,{backgroundColor:"#000",borderWidth:1,borderColor:uiConfig?.headerIconColor}]}>
+              <Text style={{color:uiConfig?.headerIconColor}}>{cartLength}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
+    width: "100%",
+  },
+
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    height: 48,
   },
+
+  sideSpacer: {
+    width: 34,
+  },
+
+  logoContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+  },
+
   logo: {
-    width: 100,
-    height: 100,
-    resizeMode: "cover",
+    maxWidth: "84%",
+    resizeMode: "contain",
   },
 
   cartContainer: {
+    width: 34,
+    alignItems: "flex-end",
     position: "relative",
   },
 
@@ -80,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff3b30",
     borderRadius: 10,
     minWidth: 18,
-    height: 18,
+    height: 21,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,

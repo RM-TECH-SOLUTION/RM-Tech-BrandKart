@@ -25,7 +25,7 @@ const ProfileComponent = ({
   const merchantName= merchantInfo?.merchantName
 
   /* ================= SHARE REFERRAL ================= */
-  console.log(merchantInfo,"profileDataprofileData");
+  // console.log(merchantInfo,"profileDataprofileData");
   
 
 const handleShareReferral = async () => {

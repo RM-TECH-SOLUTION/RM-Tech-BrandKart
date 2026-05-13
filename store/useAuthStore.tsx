@@ -161,7 +161,7 @@ const useAuthStore = create((set) => ({
         apiClient.Urls.getProfile,
  
       );
-      console.log(result,"resultv");
+      // console.log(result,"resultv");
       
       if (result?.success) {
       set({ profile: result?.user

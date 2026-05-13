@@ -65,7 +65,7 @@ useEffect(() => {
 
 }, [cmsData]);
 
-console.log(merchantInfo,"jjgjgkgyfyumerchantInfo");
+// console.log(merchantInfo,"jjgjgkgyfyumerchantInfo");
 
 
 

@@ -198,7 +198,6 @@ const qty = getQty(
   item.id,
   activeVariant?.id || null
 );
-console.log(item?.compare_price,"itemgjhgjfi");
 
 
     const isOutOfStock =
@@ -249,7 +248,7 @@ console.log(item?.compare_price,"itemgjhgjfi");
       </Text>
     )}
 
-    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+    <View style={{ flexDirection: "column", alignItems: "center", marginTop: 4 }}>
   <Text style={
 {color:uiConfig?.primaryColor || "#000",fontSize:16,fontWeight:"bold",marginTop:4}
 }>
@@ -607,7 +606,7 @@ console.log(item?.compare_price,"itemgjhgjfi");
                       <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock ||selectedProduct?.stock }</Text>
 
                       {/* VARIANTS */}
-                      {console.log(selectedProduct.variants, "selectedProduct.variants")}
+                      {/* {console.log(selectedProduct.variants, "selectedProduct.variants")} */}
 
                       {selectedProduct.variants?.length > 0 && (
 
@@ -630,7 +629,7 @@ console.log(item?.compare_price,"itemgjhgjfi");
 
                               const isStock = item.stock > 0;
                               const active = selectedVariant?.id === item.id;
-                              console.log(item, "itemitemhghjgjh");
+                              // console.log(item, "itemitemhghjgjh");
 
 
                               return (
@@ -733,7 +732,6 @@ console.log(item?.compare_price,"itemgjhgjfi");
                 backgroundColor: "#111"
               }}
             >
-              {console.log(selectedVariant?.stock, "selectedVariantjhuhutyfgkj")}
 
               <TouchableOpacity
                 style={{

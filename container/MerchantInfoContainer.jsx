@@ -27,7 +27,6 @@ const MerchantInfoContainer = () => {
 
   }, [cmsData]);
 
-  console.log(uiConfig,"uiConfigkjkjkj");
   
 
   return (

@@ -54,7 +54,7 @@ const CheckoutComponent = ({
   const enableCOD = uiConfig?.enableCOD;
   const enableOnline = uiConfig?.enableOnline;
 
-  console.log(uiConfig, "uiConfighhhhhh");
+  // console.log(uiConfig, "uiConfighhhhhh");
 
 
   /* ================= LOAD PROFILE ================= */
@@ -71,7 +71,7 @@ const CheckoutComponent = ({
 
   /* ================= TOTAL ================= */
 
-  console.log(loyaltySettings,"loyaltySettingsjjhjhuohoi");
+  // console.log(loyaltySettings,"loyaltySettingsjjhjhuohoi");
   
 
 
@@ -176,7 +176,7 @@ const CheckoutComponent = ({
 
   }, [subtotal, availablePoints, loyaltySettings]);
 
-  console.log(maxRedeemablePoints,"maxRedeemablePoints");
+  // console.log(maxRedeemablePoints,"maxRedeemablePoints");
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
@@ -187,7 +187,7 @@ const CheckoutComponent = ({
   /* ================= CREATE ORDER ================= */
 
 const createOrder = async (orderType) => {
-  console.log(cartItems,"cartItemsv");
+  // console.log(cartItems,"cartItemsv");
   try {
     setLoading(true);
 
@@ -214,7 +214,7 @@ const createOrder = async (orderType) => {
 
     const order = await res.json();
 
-    console.log("ORDER RESPONSE:", order);
+    // console.log("ORDER RESPONSE:", order);
 
     if (!order?.success) {
       Alert.alert("Order Error", order?.message || "Order failed");
@@ -339,7 +339,7 @@ const createOrder = async (orderType) => {
       ? item.images[0]
       : item.images;
 
-      console.log(item,"itemitemitemjjjbkjkg");
+      // console.log(item,"itemitemitemjjjbkjkg");
       
 
     return (

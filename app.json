@@ -1,75 +1,65 @@
 {
   "expo": {
-    "name": "Prototype-app",
-    "slug": "prototype-app",
+    "name": "ZZZ Mobiles",
+    "slug": "zzzmobiles",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/prototype_logo.png",
+    "icon": "./assets/zzzicon.png",
     "userInterfaceStyle": "light",
-
     "splash": {
-      "image": "./assets/prototype_logo.png",
+      "image": "./assets/zzzmobiles.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rmtechsolution.app",
+      "bundleIdentifier": "com.zzzmobiles.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-
-  "android": {
-  "package": "com.rmtechsolution.app",
-  "googleServicesFile": "./google-services.json",
-
-  "adaptiveIcon": {
-    "foregroundImage": "./assets/prototype_logo.png",
-    "backgroundColor": "#ffffff"
-  },
-
-  "notification": {
-    "icon": "./assets/prototype_logo.png",
-    "color": "#ffffff"
-  },
-
-  "permissions": [
-    "POST_NOTIFICATIONS",
-    "INTERNET",
-    "BLUETOOTH",
-    "BLUETOOTH_ADMIN",
-    "BLUETOOTH_CONNECT",
-    "BLUETOOTH_SCAN"
-  ]
-},
-
+    "android": {
+      "package": "com.zzzmobiles.app",
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "POST_NOTIFICATIONS",
+        "INTERNET",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_SCAN"
+      ]
+    },
     "plugins": [
       "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
+      "@react-native-firebase/messaging",
+      "expo-font"
     ],
-
     "extra": {
       "eas": {
-        "projectId": "eaa2e69a-390e-40a4-a107-2718d48a50fe"
+        "projectId": "a4c02810-d1a4-47d3-9f37-c9cc4e58cfed"
       }
     },
-
     "owner": "rm-tech-solution",
-
     "runtimeVersion": {
       "policy": "appVersion"
     },
-
     "updates": {
-      "url": "https://u.expo.dev/eaa2e69a-390e-40a4-a107-2718d48a50fe",
-       "enabled": true,
-  "checkAutomatically": "ON_LOAD"
+      "url": "https://u.expo.dev/a4c02810-d1a4-47d3-9f37-c9cc4e58cfed",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
     },
-      "rmtech": {
-      "merchantId":"9",
-      "baseUrl":"https://api.rmtechsolution.com/"
-    }
+    "notification": {
+      "icon": "./assets/zzzicon.png",
+      "color": "#ffffff"
+    },
+    "rmtech": {
+        "merchantId": "9",
+        "baseUrl": "https://api.rmtechsolution.com/"
+      }
   }
 }
