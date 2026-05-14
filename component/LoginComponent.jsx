@@ -14,6 +14,32 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 const { width, height } = Dimensions.get("window");
 
+const isLightColor = (color) => {
+  if (!color) return false;
+  // For rgba colors like "rgba(0,0,0,0.75)"
+  if (color.startsWith('rgba')) {
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+    if (match) {
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      // Calculate brightness (YIQ formula)
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128;
+    }
+  }
+  // For hex colors
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  }
+  return false; // Default to dark
+};
+
 const LoginComponent = ({
   identity,
   password,
@@ -25,6 +51,9 @@ const LoginComponent = ({
   loading,
   cmsConfig,
 }) => {
+  const cardBgColor = cmsConfig?.cardBackgroundColor || "rgba(0,0,0,0.75)";
+  const isLightBg = isLightColor(cardBgColor);
+  const textColor = isLightBg ? "#000" : "#fff";
   return (
     <View style={styles.container}>
       <Image
@@ -64,11 +93,12 @@ const LoginComponent = ({
             resizeMode="contain"
           />
 
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: cmsConfig?.buttonColor || "#E50914" }]}>
+                  
             {cmsConfig?.title || "Welcome Back"}
           </Text>
 
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: isLightBg ? "#666" : "#ccc" }]}>
             {cmsConfig?.subtitle || "Login to continue"}
           </Text>
 
@@ -82,11 +112,12 @@ const LoginComponent = ({
               },
             ]}
           >
-            <AntDesign name="user" size={18} color="#E50914" />
+            <AntDesign name="user" size={18} color={cmsConfig?.inputBorderColor ||
+                  "#E50914"} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor }]}
               placeholder="Email or Phone"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#999"
               value={identity}
               onChangeText={setIdentity}
             />
@@ -102,11 +133,12 @@ const LoginComponent = ({
               },
             ]}
           >
-            <AntDesign name="lock" size={18} color="#E50914" />
+            <AntDesign name="lock" size={18} color={cmsConfig?.inputBorderColor ||
+                  "#E50914"} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor }]}
               placeholder="Password"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#999"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -149,11 +181,11 @@ const LoginComponent = ({
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Text style={{ color: "#ccc" }}>
+            <Text style={{ color: isLightBg ? "#666" : "#ccc" }}>
               Don't have an account?
             </Text>
             <TouchableOpacity onPress={onRegister}>
-              <Text style={styles.registerText}>
+              <Text style={[styles.registerText, { color: cmsConfig?.buttonColor || "#E50914" }]}>
                 {" "}Register
               </Text>
             </TouchableOpacity>
@@ -164,7 +196,7 @@ const LoginComponent = ({
               style={{ marginTop: 20 }}
               onPress={onSkip}
             >
-              <Text style={styles.skipText}>
+              <Text style={[styles.skipText, { color: cmsConfig?.buttonColor || "#E50914" }]}>
                 Skip
               </Text>
             </TouchableOpacity>
@@ -201,8 +233,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     alignSelf: "center",
     marginBottom: 15,
   },

@@ -14,6 +14,7 @@ const { width, height } = Dimensions.get("window");
 
 const WalkthroughComponent = ({
   walkthroughData,
+  walkthroughConfig,
   currentIndex,
   fadeAnim,
   flatListRef,
@@ -71,7 +72,9 @@ const WalkthroughComponent = ({
                 width: index === currentIndex ? 28 : 10,
                 backgroundColor:
                   index === currentIndex
-                    ? "#E50914"
+                    ? walkthroughConfig?.walkthroughButtonColor ||
+              walkthroughConfig?.buttonColor ||
+              "#E50914"
                     : "rgba(255,255,255,0.3)",
               },
             ]}
@@ -80,11 +83,29 @@ const WalkthroughComponent = ({
       </View>
 
       <TouchableOpacity
-        style={styles.button}
+        style={[
+          styles.button,
+          {
+            backgroundColor:
+              walkthroughConfig?.walkthroughButtonColor ||
+              walkthroughConfig?.buttonColor ||
+              "#E50914",
+          },
+        ]}
         onPress={handleNext}
         activeOpacity={0.8}
       >
-        <Text style={styles.buttonText}>
+        <Text
+          style={[
+            styles.buttonText,
+            {
+              color:
+                walkthroughConfig?.walkthroughButtonTextColor ||
+                walkthroughConfig?.buttonTextColor ||
+                "#FFFFFF",
+            },
+          ]}
+        >
           {currentIndex === walkthroughData.length - 1
             ? "Get Started"
             : "Next"}

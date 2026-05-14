@@ -9,6 +9,7 @@ const WalkthroughContainer2 = ({ navigation }) => {
   const { cmsData } = useCmsStore();
 
   const [walkthroughData, setWalkthroughData] = useState([]);
+  const [walkthroughConfig, setWalkthroughConfig] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const flatListRef = useRef(null);
@@ -21,18 +22,33 @@ const WalkthroughContainer2 = ({ navigation }) => {
       (item) => item.modelSlug === "walkthroughSliders"
     );
 
-    if (!walkthroughItem || !Array.isArray(walkthroughItem.cms)) return;
+    const configItem = cmsData.find(
+      (item) => item.modelSlug === "walkthroughConfiguration"
+    );
 
-    const formattedData = walkthroughItem.cms.map((slide) => ({
-      title: slide.title?.fieldValue || "",
-      description: slide.discription?.fieldValue || "",
-      image:
-        slide.walkthroughImage?.fieldValue ||
-        slide.walkthroughContantImage?.fieldValue ||
-        null,
-    }));
+    if (walkthroughItem && Array.isArray(walkthroughItem.cms)) {
+      const formattedData = walkthroughItem.cms.map((slide) => ({
+        title: slide.title?.fieldValue || "",
+        description: slide.discription?.fieldValue || "",
+        image:
+          slide.walkthroughImage?.fieldValue ||
+          slide.walkthroughContantImage?.fieldValue ||
+          null,
+      }));
 
-    setWalkthroughData(formattedData);
+      setWalkthroughData(formattedData);
+    } else {
+      setWalkthroughData([]);
+    }
+
+    const formattedConfig = configItem?.cms
+      ? Object.values(configItem.cms).reduce((acc, field) => {
+          acc[field.fieldKey] = field.fieldValue;
+          return acc;
+        }, {})
+      : {};
+
+    setWalkthroughConfig(formattedConfig);
   }, [cmsData]);
 
   /* ---------------- SCROLL LOGIC ---------------- */
@@ -59,6 +75,7 @@ const WalkthroughContainer2 = ({ navigation }) => {
     <View style={{ flex: 1 }}>
       <WalkthroughComponent2
         walkthroughData={walkthroughData}
+        walkthroughConfig={walkthroughConfig}
         currentIndex={currentIndex}
         flatListRef={flatListRef}
         handleScroll={handleScroll}

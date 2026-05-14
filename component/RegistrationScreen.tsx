@@ -17,6 +17,32 @@ import useCmsStore from "../store/useCmsStore";
 
 const { width, height } = Dimensions.get("window");
 
+const isLightColor = (color) => {
+  if (!color) return false;
+  // For rgba colors like "rgba(0,0,0,0.75)"
+  if (color.startsWith('rgba')) {
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+    if (match) {
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      // Calculate brightness (YIQ formula)
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128;
+    }
+  }
+  // For hex colors
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  }
+  return false; // Default to dark
+};
+
 export default function RegistrationScreen({
   onLogin,
   registerUser,
@@ -33,6 +59,12 @@ export default function RegistrationScreen({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [referralCode, setReferralCode] = useState("");
+
+  const inputBorderColor = cmsConfig?.inputBorderColor || "#E50914";
+
+  const cardBgColor = cmsConfig?.cardBackgroundColor || "rgba(0,0,0,0.85)";
+  const isLightBg = isLightColor(cardBgColor);
+  const textColor = isLightBg ? "#000" : "#fff";
 
   /* ================= GET CMS ================= */
 
@@ -159,11 +191,11 @@ export default function RegistrationScreen({
               style={styles.logo}
             />
 
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: cmsConfig?.buttonColor || "#E50914" }]}>
               {cmsConfig?.title || "Create Account"}
             </Text>
 
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { color: isLightBg ? "#666" : "#ccc" }]}>
               {cmsConfig?.subtitle || "Join us today"}
             </Text>
 
@@ -188,15 +220,15 @@ export default function RegistrationScreen({
               <View key={field.key} style={styles.field}>
                 <TextInput
                   placeholder={field.label}
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor="#999"
                   secureTextEntry={field.secure}
                   value={field.value}
                   onChangeText={field.setter}
                   style={[
                     styles.input,
                     {
-                      borderColor:
-                        cmsConfig?.inputBorderColor || "#E50914",
+                      borderColor: inputBorderColor,
+                      color: textColor,
                     },
                     errors[field.key] && styles.inputError,
                   ]}
@@ -214,7 +246,7 @@ export default function RegistrationScreen({
               <View style={styles.field}>
                 <TextInput
                   placeholder="Referral Code (Optional)"
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor="#999"
                   value={referralCode}
                   onChangeText={(t) =>
                     setReferralCode(t.toUpperCase())
@@ -222,8 +254,8 @@ export default function RegistrationScreen({
                   style={[
                     styles.input,
                     {
-                      borderColor:
-                        cmsConfig?.inputBorderColor || "#E50914",
+                      borderColor: inputBorderColor,
+                      color: textColor,
                     },
                   ]}
                 />
@@ -243,7 +275,7 @@ export default function RegistrationScreen({
                   ]}
                   onPress={() => setShowGenderModal(true)}
                 >
-                  <Text style={{ color: "#fff" }}>
+                  <Text style={{ color: gender === "Select Gender" ? "#999" : textColor }}>
                     {gender}
                   </Text>
                 </TouchableOpacity>
@@ -264,7 +296,7 @@ export default function RegistrationScreen({
                             setShowGenderModal(false);
                           }}
                         >
-                          <Text>{g}</Text>
+                          <Text style={{ color: "#000" }}>{g}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -307,11 +339,11 @@ export default function RegistrationScreen({
 
             {/* Footer */}
             <View style={styles.footer}>
-              <Text style={{ color: "#ccc" }}>
+              <Text style={{ color: isLightBg ? "#666" : "#ccc" }}>
                 Already have account?
               </Text>
               <TouchableOpacity onPress={onLogin}>
-                <Text style={styles.loginText}>
+                <Text style={[styles.loginText,{ color: cmsConfig?.buttonColor || "#E50914"}]}>
                   {" "}
                   Login
                 </Text>
@@ -404,9 +436,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 15,
     padding: 20,
+    color: "#333",
+
   },
   modalOption: {
     paddingVertical: 15,
     alignItems: "center",
+    color: "#333",
   },
 });

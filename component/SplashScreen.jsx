@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
-const LOGO_SIZE = 160;
+const LOGO_SIZE = 180;
 
 const SplashScreen = ({
   fadeAnim,

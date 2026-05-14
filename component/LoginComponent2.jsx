@@ -14,6 +14,32 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 const { width, height } = Dimensions.get("window");
 
+const isLightColor = (color) => {
+  if (!color) return false;
+  // For rgba colors like "rgba(0,0,0,0.75)"
+  if (color.startsWith('rgba')) {
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+    if (match) {
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      // Calculate brightness (YIQ formula)
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128;
+    }
+  }
+  // For hex colors
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  }
+  return false; // Default to dark
+};
+
 const LoginComponent2 = ({
   identity,
   password,
@@ -25,6 +51,9 @@ const LoginComponent2 = ({
   loading,
   cmsConfig,
 }) => {
+  const cardBgColor = cmsConfig?.cardBackgroundColor || "rgba(255,255,255,0.95)";
+  const isLightBg = isLightColor(cardBgColor);
+  const textColor = isLightBg ? "#000" : "#fff";
   return (
     <LinearGradient
       colors={
@@ -100,7 +129,7 @@ const LoginComponent2 = ({
               }
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor }]}
               placeholder={
                 cmsConfig?.identityPlaceholder ||
                 "Email or Phone"
@@ -134,7 +163,7 @@ const LoginComponent2 = ({
               }
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: textColor }]}
               placeholder={
                 cmsConfig?.passwordPlaceholder ||
                 "Password"
