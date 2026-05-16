@@ -14,6 +14,7 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import GreetingComponent from "./GreetingComponent";
 import messaging from "@react-native-firebase/messaging";
 import useSessionStore from "../store/useSessionStore";
@@ -194,15 +195,72 @@ export default function HomeScreen({
   }, [currentIndex, homeBanner?.length]);
 
   /* ================= UI ================= */
+/* ================= UI ================= */
+
+console.log(
+  uiConfig?.homeBgColorGradient,
+  "uiConfig?.homeBgColorGradienthhhh"
+);
+
+const getGradientColors = () => {
+  let gradientData = uiConfig?.homeBgColorGradient;
+
+  // Handle stringified array from API
+  if (typeof gradientData === "string") {
+    try {
+      gradientData = JSON.parse(gradientData);
+      console.log("Parsed Gradient:", gradientData);
+    } catch (e) {
+      console.log("Gradient parse error:", e);
+    }
+  }
+
+  // Validate gradient array
+  if (Array.isArray(gradientData)) {
+    const colors = gradientData
+      .map((color) => String(color).trim())
+      .filter(
+        (color) =>
+          color &&
+          color.length > 0 &&
+          color !== "null" &&
+          color !== "undefined"
+      );
+
+    console.log("Filtered Colors:", colors);
+
+    if (colors.length >= 2) {
+      console.log("Using gradient:", colors);
+      return colors;
+    }
+  }
+
+  // Fallback solid color
+  const solidColor = uiConfig?.homeBgColor || "#0B0B0F";
+
+  console.log("Using solid color:", solidColor);
+
+  return [solidColor, solidColor];
+};
+
+const gradientColors = getGradientColors();
+
+console.log(gradientColors, "gradientColors");
+  
+
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: uiConfig?.homeBgColor || "#0B0B0F",
-      }}
-      showsVerticalScrollIndicator={false}
+    <LinearGradient
+      colors={gradientColors}
+      style={{ flex: 1,
+      paddingTop: 10 }}
     >
-      <GreetingComponent greetingConfig={greetingConfig} />
+      <ScrollView
+        style={{
+          flex: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+      <GreetingComponent greetingConfig={greetingConfig} backgroundColor={gradientColors?.[0]} />
 
       {/* HERO */}
       {homeBanner?.length > 0 && (
@@ -310,7 +368,8 @@ export default function HomeScreen({
       )}
 
       <View style={{ height: 40 }} />
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
@@ -321,10 +380,10 @@ const styles = StyleSheet.create({
   heroImage: { width: "100%", height: "100%" },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: "rgba(0,0,0,0.1)",
   },
   heroContent: { position: "absolute", bottom: 40, left: 24, right: 24 },
-  heroTitle: { color: "#fff", fontSize: 26, fontWeight: "bold" },
+  heroTitle: { color: "#fff", fontSize: 22, fontWeight: "bold" },
   heroSub: { color: "#ccc", marginTop: 6, fontSize: 14 },
   heroButton: {
     marginTop: 16,
@@ -332,6 +391,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
+    width: 140,
+    alignItems: "center",
   },
   heroButtonText: { color: "#fff", fontWeight: "bold" },
   indicatorContainer: { flexDirection: "row", justifyContent: "center" },

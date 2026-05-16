@@ -7,9 +7,11 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
-  Image
+  Image,
+  Alert
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import useSessionStore from "../store/useSessionStore";
 
 const { width } = Dimensions.get("window");
 
@@ -45,7 +47,29 @@ const CategoryListComponent = ({
   const [selectedMainCatalogue, setSelectedMainCatalogue] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 
+  const isLoggedIn = useSessionStore((state) => state.isLoggedIn);
+
+  const requireAuthBeforeAction = () => {
+    if (isLoggedIn) return true;
+
+    Alert.alert(
+      "Login Required",
+      "Please sign in or register to add items to your cart.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => navigation.navigate("Auth"),
+        },
+      ]
+    );
+
+    return false;
+  };
+
   const [pdpVisible, setPdpVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -61,10 +85,10 @@ const CategoryListComponent = ({
 
   const dynamicStyles = styles(uiConfig, CARD_WIDTH);
   const pdpQty = cartMap[
-  selectedVariant?.id
-    ? `${selectedProduct?.id}_${selectedVariant?.id}`
-    : `${selectedProduct?.id}`
-]?.quantity || 0;
+    selectedVariant?.id
+      ? `${selectedProduct?.id}_${selectedVariant?.id}`
+      : `${selectedProduct?.id}`
+  ]?.quantity || 0;
 
   /* ================= OPEN POPUP ================= */
 
@@ -95,15 +119,15 @@ const CategoryListComponent = ({
 
   }, [selectedMainCatalogue, CATEGORIES]);
 
-const getQty = (productId, variantId) => {
+  const getQty = (productId, variantId) => {
 
-  const key = variantId
-    ? `${productId}_${variantId}`
-    : `${productId}`;
+    const key = variantId
+      ? `${productId}_${variantId}`
+      : `${productId}`;
 
-  return cartMap[key]?.quantity || 0;
+    return cartMap[key]?.quantity || 0;
 
-};
+  };
 
   /* ================= SELECT CATEGORY ================= */
 
@@ -165,39 +189,39 @@ const getQty = (productId, variantId) => {
   );
 
   /* ================= ITEM CARD ================= */
-const getVariantInCart = (product) => {
+  const getVariantInCart = (product) => {
 
-  if (!product?.variants?.length) return null;
+    if (!product?.variants?.length) return null;
 
-  const keys = Object.keys(cartMap);
+    const keys = Object.keys(cartMap);
 
-  const productKeys = keys.filter(k =>
-    k.startsWith(`${product.id}_`)
-  );
+    const productKeys = keys.filter(k =>
+      k.startsWith(`${product.id}_`)
+    );
 
-  if (!productKeys.length) return product.variants[0];
+    if (!productKeys.length) return product.variants[0];
 
-  const lastKey = productKeys[productKeys.length - 1];
+    const lastKey = productKeys[productKeys.length - 1];
 
-  const variantId = Number(lastKey.split("_")[1]);
+    const variantId = Number(lastKey.split("_")[1]);
 
-  return product.variants.find(v => v.id === variantId);
+    return product.variants.find(v => v.id === variantId);
 
-};
+  };
 
-const isItemInCart = (itemId) => {
-  return cartItems?.some(c => Number(c.item_id) === Number(itemId));
-};
+  const isItemInCart = (itemId) => {
+    return cartItems?.some(c => Number(c.item_id) === Number(itemId));
+  };
 
   const renderItemCard = (item) => {
 
-const activeVariant = getVariantInCart(item);
-const inCart = isItemInCart(item.id);
+    const activeVariant = getVariantInCart(item);
+    const inCart = isItemInCart(item.id);
 
-const qty = getQty(
-  item.id,
-  activeVariant?.id || null
-);
+    const qty = getQty(
+      item.id,
+      activeVariant?.id || null
+    );
 
 
     const isOutOfStock =
@@ -212,12 +236,12 @@ const qty = getQty(
         {getImageUri(item) && (
 
           <TouchableOpacity
-           onPress={() => {
-  setSelectedProduct(item);
-  const lastVariant = getVariantInCart(item);
-  setSelectedVariant(lastVariant || item.variants[0]);
-  setPdpVisible(true);
-}}
+            onPress={() => {
+              setSelectedProduct(item);
+              const lastVariant = getVariantInCart(item);
+              setSelectedVariant(lastVariant || item.variants[0]);
+              setPdpVisible(true);
+            }}
           >
 
             <Image
@@ -228,112 +252,116 @@ const qty = getQty(
           </TouchableOpacity>
 
         )}
-        <View style={{flex: 1, justifyContent: "space-between" }}>
+        <View style={{ flex: 1, justifyContent: "space-between" }}>
 
-  <TouchableOpacity
-    onPress={() => {
-      setSelectedProduct(item);
-      const lastVariant = getVariantInCart(item);
-      setSelectedVariant(lastVariant || item.variants[0]);
-      setPdpVisible(true);
-    }}
-  >
-    <Text numberOfLines={2} style={dynamicStyles.cardText}>
-      {item.name}
-    </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedProduct(item);
+              const lastVariant = getVariantInCart(item);
+              setSelectedVariant(lastVariant || item.variants[0]);
+              setPdpVisible(true);
+            }}
+          >
+            <Text numberOfLines={2} style={dynamicStyles.cardText}>
+              {item.name}
+            </Text>
 
-    {item.stock && (
-      <Text style={dynamicStyles.cardText}>
-        Stock-{item.stock}
-      </Text>
-    )}
+            {item.stock && (
+              <Text style={dynamicStyles.cardText}>
+                Stock-{item.stock}
+              </Text>
+            )}
 
-    <View style={{ flexDirection: "column", alignItems: "center", marginTop: 4 }}>
-  <Text style={
-{color:uiConfig?.primaryColor || "#000",fontSize:16,fontWeight:"bold",marginTop:4}
-}>
-    ₹{activeVariant?.price || item.price}
-  </Text>
-    {(activeVariant?.compare_price || item?.compare_price) && (
-    <Text
-      style={{
-        color: "#888",
-        textDecorationLine: "line-through",
-        marginLeft:6
-      }}
-    >
-      ₹{activeVariant?.compare_price || item?.compare_price}
-    </Text>
-  )}
+            <View style={{ flexDirection: "column", alignItems: "center", marginTop: 4 }}>
+              <Text style={
+                { color: uiConfig?.primaryColor || "#000", fontSize: 16, fontWeight: "bold", marginTop: 4 }
+              }>
+                ₹{activeVariant?.price || item.price}
+              </Text>
+              {(activeVariant?.compare_price || item?.compare_price) && (
+                <Text
+                  style={{
+                    color: "#888",
+                    textDecorationLine: "line-through",
+                    marginLeft: 6
+                  }}
+                >
+                  ₹{activeVariant?.compare_price || item?.compare_price}
+                </Text>
+              )}
 
-</View>
-  </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
 
-  <View style={{ marginTop: 10 }}>
+          <View style={{ marginTop: 10 }}>
 
-    {isOutOfStock ? (
+            {isOutOfStock ? (
 
-      <View style={dynamicStyles.outOfStock}>
-        <Text style={dynamicStyles.outText}>
-          OUT OF STOCK
-        </Text>
-      </View>
+              <View style={dynamicStyles.outOfStock}>
+                <Text style={dynamicStyles.outText}>
+                  OUT OF STOCK
+                </Text>
+              </View>
 
-    ) : qty === 0 ? (
+            ) : qty === 0 ? (
 
-      <TouchableOpacity
-        style={dynamicStyles.addButton}
-        onPress={() => {
-          setSelectedProduct(item);
-          const lastVariant = getVariantInCart(item);
-          setSelectedVariant(lastVariant || item?.variants?.[0] || null);
-          setPdpVisible(true);
-        }}
-      >
-        <Text style={dynamicStyles.addButtonText}>
-          {inCart ? "ADD MORE" : "ADD"}
-        </Text>
-      </TouchableOpacity>
+              <TouchableOpacity
+                style={dynamicStyles.addButton}
+                onPress={() => {
+                  if (!requireAuthBeforeAction()) return;
 
-    ) : (
+                  setSelectedProduct(item);
+                  const lastVariant = getVariantInCart(item);
+                  setSelectedVariant(lastVariant || item?.variants?.[0] || null);
+                  setPdpVisible(true);
+                }}
+              >
+                <Text style={dynamicStyles.addButtonText}>
+                  {inCart ? "ADD MORE" : "ADD"}
+                </Text>
+              </TouchableOpacity>
 
-      <View style={dynamicStyles.qtyContainer}>
+            ) : (
 
-        <TouchableOpacity
-          style={dynamicStyles.qtyButton}
-          onPress={() =>
-            onDecrease({
-              ...item,
-              variant: activeVariant
-            })
-          }
-        >
-          <Text style={dynamicStyles.qtyText}>-</Text>
-        </TouchableOpacity>
+              <View style={dynamicStyles.qtyContainer}>
 
-        <Text style={dynamicStyles.qtyValue}>
-          {qty}
-        </Text>
+                <TouchableOpacity
+                  style={dynamicStyles.qtyButton}
+                  onPress={() => {
+                    if (!requireAuthBeforeAction()) return;
+                    onDecrease({
+                      ...item,
+                      variant: activeVariant
+                    });
+                  }}
+                >
+                  <Text style={dynamicStyles.qtyText}>-</Text>
+                </TouchableOpacity>
 
-        <TouchableOpacity
-          style={dynamicStyles.qtyButton}
-          onPress={() =>
-            onIncrease({
-              ...item,
-              variant: activeVariant
-            })
-          }
-        >
-          <Text style={dynamicStyles.qtyText}>+</Text>
-        </TouchableOpacity>
+                <Text style={dynamicStyles.qtyValue}>
+                  {qty}
+                </Text>
 
-      </View>
+                <TouchableOpacity
+                  style={dynamicStyles.qtyButton}
+                  onPress={() => {
+                    if (!requireAuthBeforeAction()) return;
+                    onIncrease({
+                      ...item,
+                      variant: activeVariant
+                    });
+                  }}
+                >
+                  <Text style={dynamicStyles.qtyText}>+</Text>
+                </TouchableOpacity>
 
-    )}
+              </View>
 
-  </View>
+            )}
 
-</View>
+          </View>
+
+        </View>
       </View>
 
     );
@@ -411,69 +439,65 @@ const qty = getQty(
 
       )}
 
-      {/* ================= SELECT CATALOG MODAL ================= */}
 
+      {/* ================= SELECT CATALOG MODAL ================= */}
       <Modal
         visible={modalVisible}
         transparent
         animationType="slide"
       >
-
         <View style={dynamicStyles.modalOverlay}>
-
           <View style={dynamicStyles.modalBox}>
-
             <Text style={dynamicStyles.modalTitle}>
               Select Catalog
             </Text>
 
-            {/* MAIN CATALOGUES */}
-
-            {!selectedMainCatalogue && (
-
+            {/* If mainCatalogues is not present or empty, skip to catalog selection */}
+            {(!mainCatalogues || mainCatalogues.length === 0) ? (
               <FlatList
-                data={mainCatalogues}
+                data={CATEGORIES}
                 keyExtractor={(i) => i.id.toString()}
                 numColumns={gridColumns}
                 columnWrapperStyle={{ justifyContent: "space-between" }}
-                renderItem={({ item }) => renderMainCatalogCard(item)}
+                renderItem={({ item }) => renderCategoryCard(item)}
               />
-
-            )}
-
-            {/* CATALOG MODELS */}
-
-            {selectedMainCatalogue && (
-
+            ) : (
               <>
+                {/* MAIN CATALOGUES */}
+                {!selectedMainCatalogue && (
+                  <FlatList
+                    data={mainCatalogues}
+                    keyExtractor={(i) => i.id.toString()}
+                    numColumns={gridColumns}
+                    columnWrapperStyle={{ justifyContent: "space-between" }}
+                    renderItem={({ item }) => renderMainCatalogCard(item)}
+                  />
+                )}
 
-                <TouchableOpacity
-                  onPress={() => setSelectedMainCatalogue(null)}
-                  style={{ marginBottom: 10 }}
-                >
-
-                  <Text style={{ color: "#fff" }}>
-                    ← Back
-                  </Text>
-
-                </TouchableOpacity>
-
-                <FlatList
-                  data={filteredCatalogues}
-                  keyExtractor={(i) => i.id.toString()}
-                  numColumns={gridColumns}
-                  columnWrapperStyle={{ justifyContent: "space-between" }}
-                  renderItem={({ item }) => renderCategoryCard(item)}
-                />
-
+                {/* CATALOG MODELS */}
+                {selectedMainCatalogue && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => setSelectedMainCatalogue(null)}
+                      style={{ marginBottom: 10 }}
+                    >
+                      <Text style={{ color: "#fff" }}>
+                        ← Back
+                      </Text>
+                    </TouchableOpacity>
+                    <FlatList
+                      data={filteredCatalogues}
+                      keyExtractor={(i) => i.id.toString()}
+                      numColumns={gridColumns}
+                      columnWrapperStyle={{ justifyContent: "space-between" }}
+                      renderItem={({ item }) => renderCategoryCard(item)}
+                    />
+                  </>
+                )}
               </>
-
             )}
-
           </View>
-
         </View>
-
       </Modal>
       <Modal visible={pdpVisible} transparent animationType="slide" >
 
@@ -603,7 +627,7 @@ const qty = getQty(
                         )}
 
                       </View>
-                      <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock ||selectedProduct?.stock }</Text>
+                      <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock || selectedProduct?.stock}</Text>
 
                       {/* VARIANTS */}
                       {/* {console.log(selectedProduct.variants, "selectedProduct.variants")} */}
@@ -743,31 +767,32 @@ const qty = getQty(
                 }}
                 onPress={() => {
 
+                  if (!requireAuthBeforeAction()) return;
                   if (selectedVariant?.stock === 0) return;
 
-                const cartKey = selectedVariant?.id
-  ? `${selectedProduct?.id}_${selectedVariant?.id}`
-  : `${selectedProduct?.id}`;
+                  const cartKey = selectedVariant?.id
+                    ? `${selectedProduct?.id}_${selectedVariant?.id}`
+                    : `${selectedProduct?.id}`;
 
-if (pdpQty === 0) {
+                  if (pdpQty === 0) {
 
-  onAdd &&
-    onAdd({
-      ...selectedProduct,
-      variant: selectedVariant,
-      cartKey
-    });
+                    onAdd &&
+                      onAdd({
+                        ...selectedProduct,
+                        variant: selectedVariant,
+                        cartKey
+                      });
 
-} else {
+                  } else {
 
-  onIncrease &&
-    onIncrease({
-      ...selectedProduct,
-      variant: selectedVariant,
-      cartKey
-    });
+                    onIncrease &&
+                      onIncrease({
+                        ...selectedProduct,
+                        variant: selectedVariant,
+                        cartKey
+                      });
 
-}
+                  }
 
                   setPdpVisible(false);
                   setShowFullSpec(false);
@@ -1002,4 +1027,4 @@ const styles = (ui, CARD_WIDTH) =>
       marginBottom: 20
     }
 
-  });
+  })

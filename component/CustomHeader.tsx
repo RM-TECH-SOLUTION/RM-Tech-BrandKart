@@ -42,7 +42,8 @@ export default function CustomHeader({ uiConfig }) {
                 ? { uri: uiConfig.headerLogo }
                 : require("../assets/AR-Fashion.png")
             }
-            style={[styles.logo, { aspectRatio: logoAspectRatio, height: logoHeight }]}
+            style={[styles.logo, { width:100, height:50
+             }]}
             onLoad={(event) => {
               const { width, height } = event.nativeEvent.source || {};
               if (width && height) {
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    height: 48,
+    height: 68,
   },
 
   sideSpacer: {
