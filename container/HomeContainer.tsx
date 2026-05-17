@@ -24,26 +24,31 @@ const normalizeCmsFields = (cms) => {
 
 const HomeContainer = () => {
   const { cmsData, getCmsData } = useCmsStore();
-  const {getLoyaltySettings,getCart} = orderingStore();
+  const { getLoyaltySettings, getCart } = orderingStore();
 
   const [uiConfig, setUiConfig] = useState({});
-  const [homeBanner, setHomeBanner] = useState(null);
+  const [homeBanner, setHomeBanner] = useState([]);
   const [homeSlider, setHomeSlider] = useState([]);
   const [greetingConfig, setGreetingConfig] = useState({});
 
   useEffect(() => {
     getCmsData();
     getLoyaltySettings();
-    getCart()
+    getCart();
   }, []);
 
   useEffect(() => {
     if (!Array.isArray(cmsData)) return;
 
+    let mergedUiConfig = {};
+
     cmsData.forEach((item) => {
       switch (item.modelSlug) {
         case "homeUiConfiguration":
-          setUiConfig(normalizeCmsFields(item.cms));
+          mergedUiConfig = {
+            ...mergedUiConfig,
+            ...normalizeCmsFields(item.cms),
+          };
           break;
 
         case "homeOrderingBanner":
@@ -55,10 +60,32 @@ const HomeContainer = () => {
           break;
 
         case "appWelcomeMessage":
-            setGreetingConfig(normalizeCmsFields(item.cms));
+          setGreetingConfig(normalizeCmsFields(item.cms));
+          break;
+
+        /* ================= NEW CMS ================= */
+
+        case "homeSectionOffers":
+          mergedUiConfig.homeSectionOffers =
+            normalizeCmsFields(item.cms);
+          break;
+
+        case "HomeExploreCategories":
+          mergedUiConfig.HomeExploreCategories =
+            normalizeCmsFields(item.cms);
+          break;
+
+        case "socialPages":
+          mergedUiConfig.socialPages =
+            normalizeCmsFields(item.cms);
+          break;
+
+        default:
           break;
       }
     });
+
+    setUiConfig(mergedUiConfig);
   }, [cmsData]);
 
   return (
@@ -73,4 +100,4 @@ const HomeContainer = () => {
   );
 };
 
-export default HomeContainer;
+export default HomeContainer

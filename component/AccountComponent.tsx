@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -22,58 +22,76 @@ const AccountComponent = () => {
   const navigation = useNavigation<Nav>();
   const { cmsData } = useCmsStore();
   const { getProfile } = useAuthStore();
-   const { profileData } = useSessionStore();
+  const { profileData } = useSessionStore();
 
   const [uiConfig, setUiConfig] = useState<any>({});
   const [merchantInfo, setMerchantInfo] = useState<any>({});
 
-useEffect(() => {
-  if (!Array.isArray(cmsData)) return;
+  useEffect(() => {
+    if (!Array.isArray(cmsData)) return;
 
-  /* ACCOUNT PAGE CONFIG */
+    /* ACCOUNT PAGE CONFIG */
 
-  const config = cmsData.find(
-    (item) => item.modelSlug === "accountPageConfiguration"
-  );
-
-  if (config?.cms) {
-    const formatted = Object.values(config.cms).reduce((acc: any, field: any) => {
-      acc[field.fieldKey] = field.fieldValue;
-      return acc;
-    }, {});
-
-    setUiConfig(formatted);
-  }
-
-  /* MERCHANT INFO */
-
-  const merchant = cmsData.find(
-    (item) => item.modelSlug === "merchantInfo"
-  );
-
-  if (merchant?.cms) {
-    const formattedMerchant = Object.values(merchant.cms).reduce(
-      (acc: any, field: any) => {
-        acc[field.fieldKey] = field.fieldValue;
-        return acc;
-      },
-      {}
+    const config = cmsData.find(
+      (item) => item.modelSlug === "accountPageConfiguration"
     );
 
-    setMerchantInfo(formattedMerchant);
-  }
+    if (config?.cms) {
+      const formatted = Object.values(config.cms).reduce((acc: any, field: any) => {
+        acc[field.fieldKey] = field.fieldValue;
+        return acc;
+      }, {});
 
-}, [cmsData]);
+      setUiConfig(formatted);
+    }
 
-// console.log(merchantInfo,"jjgjgkgyfyumerchantInfo");
+    /* MERCHANT INFO */
 
+    const merchant = cmsData.find(
+      (item) => item.modelSlug === "merchantInfo"
+    );
 
+    if (merchant?.cms) {
+      const formattedMerchant = Object.values(merchant.cms).reduce(
+        (acc: any, field: any) => {
+          acc[field.fieldKey] = field.fieldValue;
+          return acc;
+        },
+        {}
+      );
 
-  useEffect(()=>{
-      getProfile()
-  },[])
+      setMerchantInfo(formattedMerchant);
+    }
 
-  const styles = createStyles(uiConfig);
+  }, [cmsData]);
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  /* =========================
+     CHECK BACKGROUND IS DARK
+  ========================= */
+
+  const isDarkBackground = useMemo(() => {
+    const bgColor =
+      uiConfig?.gradientStart ||
+      uiConfig?.cardBgColor ||
+      "#0F0F0F";
+
+    const hex = bgColor.replace("#", "");
+
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // brightness formula
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness < 150;
+  }, [uiConfig]);
+
+  const styles = createStyles(uiConfig, isDarkBackground);
 
   const accountList = [
     { icon: "time-outline", name: "History", route: "OrderHistoryContainer" },
@@ -91,12 +109,19 @@ useEffect(() => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
 
-        <ProfileComponent navigation={navigation} uiConfig={uiConfig} profileData={profileData} merchantInfo={merchantInfo}/>
+        <ProfileComponent
+          navigation={navigation}
+          uiConfig={uiConfig}
+          profileData={profileData}
+          merchantInfo={merchantInfo}
+        />
 
-        <Text style={styles.sectionTitle}>Account Settings</Text>
+        <Text style={styles.sectionTitle}>
+          Account Settings
+        </Text>
 
         <View>
-          {accountList.map((item, idx) => (
+          {accountList.map((item) => (
             <Pressable
               key={item.route}
               onPress={() => navigation.navigate(item.route as any)}
@@ -112,7 +137,10 @@ useEffect(() => {
                   color={uiConfig?.cardIconColor || "#E50914"}
                   style={{ marginRight: 14 }}
                 />
-                <Text style={styles.text}>{item.name}</Text>
+
+                <Text style={styles.text}>
+                  {item.name}
+                </Text>
               </View>
 
               <Ionicons
@@ -135,7 +163,7 @@ export default AccountComponent;
    DYNAMIC STYLES
 ========================================================= */
 
-const createStyles = (ui: any) =>
+const createStyles = (ui: any, isDarkBackground: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -147,7 +175,9 @@ const createStyles = (ui: any) =>
       fontWeight: "800",
       marginHorizontal: 20,
       marginVertical: 15,
-      color: ui?.sectionTitleColor || "#E50914"
+
+      // AUTO TEXT COLOR
+      color: isDarkBackground ? "#FFFFFF" : "#000000"
     },
 
     card: {

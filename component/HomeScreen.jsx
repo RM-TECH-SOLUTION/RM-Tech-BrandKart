@@ -280,92 +280,43 @@ const getTextColorForBackground = (bgColor) => {
   return "#fff";
 };
 
+const openSocialLink = async (url) => { try { if (!url) return; const supported = await Linking.canOpenURL(url); if (supported) { await Linking.openURL(url); } } catch (e) { console.log("Social Link Error:", e); } };
+
 const gradientColors = getGradientColors();
 const quickActionTextColor = getTextColorForBackground(gradientColors?.[0]);
+console.log(uiConfig,"uiConfighhh");
+
+const socialData = Array.isArray(uiConfig?.socialPages)
+  ? uiConfig?.socialPages?.[0]
+  : {};
 
 const staticSocialPages = [
   {
     id: "s1",
     title: "Facebook",
     icon: "facebook-square",
-    url: "https://www.facebook.com",
+    url: socialData?.facebookLink || "",
     color: "#1877F2",
   },
   {
     id: "s2",
     title: "Instagram",
     icon: "instagram",
-    url: "https://www.instagram.com",
+    url: socialData?.instagramLink || "",
     color: "#E1306C",
   },
   {
     id: "s3",
     title: "YouTube",
     icon: "youtube-play",
-    url: "https://www.youtube.com",
+    url: socialData?.youtubeLink || "",
     color: "#FF0000",
   },
 ];
 
-const staticPatternCards = [
-  {
-    id: "p1",
-    title: "Men's T-Shirts",
-    subtitle: "Comfort fits",
-    price: "Starts at ₹99",
-    bgColor: "#3CB371",
-    image:
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
-    inAppPathRedirect: "Order",
-  },
-  {
-    id: "p2",
-    title: "Women's Tops",
-    subtitle: "New arrivals",
-    price: "Starts at ₹149",
-    bgColor: "#8A2BE2",
-    image:
-      "https://as1.ftcdn.net/v2/jpg/02/86/68/80/1000_F_286688069_n7HH5pKqK49Dfm3KvAlKGs0AD4HbrFlV.jpg",
-    inAppPathRedirect: "Order",
-  },
-  {
-    id: "p3",
-    title: "Kids Shoes",
-    subtitle: "Durable & comfy",
-    price: "Starts at ₹199",
-    bgColor: "#FFD700",
-    image:
-      "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=800&q=80",
-    inAppPathRedirect: "Order",
-  },
-];
+const staticPatternCards = Array.isArray( uiConfig?.HomeExploreCategories ) ? uiConfig?.HomeExploreCategories : [];
 
-const staticOfferCards = [
-  {
-    id: "o1",
-    title: "M-Flex",
-    description: "Out of fuel? Get fuel credit today with M-Flex.",
-    buttonText: "Get fuel credit",
-    bgColor: "#D2232A",
-    inAppPathRedirect: "Order",
-  },
-  {
-    id: "o2",
-    title: "Refer and earn!",
-    description: "Get ₦1,000 when you invite a friend to use Messenger today!",
-    buttonText: "Start referring",
-    bgColor: "green",
-    inAppPathRedirect: "Account",
-  },
-  {
-    id: "o4",
-    title: "Stay motivated!",
-    description: "Redeem coupons when you reach your order goals. Get started today!",
-    buttonText: "View stats",
-    bgColor: "#BA2E42",
-    inAppPathRedirect: "Home",
-  },
-];
+const staticOfferCards = Array.isArray( uiConfig?.homeSectionOffers ) ? uiConfig?.homeSectionOffers : [];
 
 console.log(gradientColors, "gradientColors");
   
@@ -489,68 +440,176 @@ console.log(gradientColors, "gradientColors");
 
           <View style={styles.patternSection}>
             <Text style={[styles.patternHeader, { color: quickActionTextColor }]}>Explore Categories</Text>
-            <View style={styles.patternGrid}>
-              {staticPatternCards.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.patternCard, { backgroundColor: item.bgColor }]}
-                  onPress={() => navigateToRedirectTarget(item.inAppPathRedirect)}
-                >
-                  <Image source={{ uri: item.image }} style={styles.patternImage} />
+<View style={styles.patternGrid}>
+  {staticPatternCards.map((item, index) => {
+    const bgColor =
+      item.backgroundColor ||
+      item.background ||
+      "#3CB371";
 
-                  <LinearGradient
-  colors={[
-    "rgba(0,0,0,0)",
-    `${item.bgColor}20`,
-    `${item.bgColor}CC`,
-    `${item.bgColor}`,
-  ]}
-  end={{ x: 0.15, y: 0.1 }}
-  start={{ x: 0.9, y: 1 }}
-  style={styles.patternGradient}
->
-  <View style={styles.patternContent}>
-    <Text style={styles.patternTitle}>{item.title}</Text>
+    const textColor =
+      getTextColorForBackground(bgColor);
 
-    <Text style={styles.patternSubtitle}>
-      {item.subtitle}
-    </Text>
+    return (
+      <TouchableOpacity
+        key={item.id || item.title || index}
+        style={[
+          styles.patternCard,
+          {
+            backgroundColor: bgColor,
+          },
+        ]}
+        onPress={() =>
+          navigateToRedirectTarget(
+            item.buttonLink
+          )
+        }
+      >
+        <Image
+          source={{
+            uri: item.backgroundImage,
+          }}
+          style={styles.patternImage}
+        />
 
-    <View style={styles.pricePill}>
-      <Text style={styles.pricePillText}>
-        {item.price}
-      </Text>
-    </View>
-  </View>
-</LinearGradient>
-                </TouchableOpacity>
-              ))}
+        <LinearGradient
+          colors={[
+            "rgba(0,0,0,0)",
+            `${bgColor}20`,
+            `${bgColor}CC`,
+            `${bgColor}`,
+          ]}
+          end={{ x: 0.15, y: 0.1 }}
+          start={{ x: 0.9, y: 1 }}
+          style={styles.patternGradient}
+        >
+          <View style={styles.patternContent}>
+            <Text
+              style={[
+                styles.patternTitle,
+                { color: textColor },
+              ]}
+            >
+              {item.title}
+            </Text>
+
+            <Text
+              style={[
+                styles.patternSubtitle,
+                { color: textColor },
+              ]}
+            >
+              {item.discription}
+            </Text>
+
+            <View
+              style={[
+                styles.pricePill,
+                {
+                  backgroundColor:
+                    item.buttonBackgroundColor ||
+                    "#fff",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.pricePillText,
+                  {
+                    color:
+                      item.buttonTextColor ||
+                      "#111",
+                  },
+                ]}
+              >
+                {item.buttonTitle}
+              </Text>
             </View>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  })}
+</View>
           </View>
 
           <View style={styles.offerSection}>
             <Text style={[styles.offerHeader, { color: quickActionTextColor }]}>Offers</Text>
-            <View style={styles.offerGrid}>
-              {staticOfferCards.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.offerCard, { backgroundColor: item.bgColor }]}
-                  onPress={() => navigateToRedirectTarget(item.inAppPathRedirect)}
-                >
-                  <View style={styles.offerContent}>
-                    <Text style={styles.offerTitle}>{item.title}</Text>
-                    <Text style={styles.offerDescription}>{item.description}</Text>
-                  </View>
+<View style={styles.offerGrid}>
+  {staticOfferCards.map((item, index) => {
+    const bgColor =
+      item.backgroundColor || "#D2232A";
 
-                  <View style={styles.offerFooter}>
-                    <View style={styles.offerButton}>
-                      <Text style={styles.offerButtonText}>{item.buttonText}</Text>
-                    </View>
-                    <View style={styles.offerAccent} />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+    const textColor =
+      getTextColorForBackground(bgColor);
+
+    return (
+      <TouchableOpacity
+        key={item.id || item.title || index}
+        style={[
+          styles.offerCard,
+          {
+            backgroundColor: bgColor,
+          },
+        ]}
+        onPress={() =>
+          navigateToRedirectTarget(
+            item.buttonLinks
+          )
+        }
+      >
+        <View style={styles.offerContent}>
+          <Text
+            style={[
+              styles.offerTitle,
+              { color: textColor },
+            ]}
+          >
+            {item.title}
+          </Text>
+
+          <Text
+            style={[
+              styles.offerDescription,
+              { color: textColor },
+            ]}
+          >
+            {item.discription}
+          </Text>
+        </View>
+
+        <View style={styles.offerFooter}>
+          <View
+            style={[
+              styles.offerButton,
+              {
+                backgroundColor:
+                  item.buttonBackgroundColor ||
+                  "#fff",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.offerButtonText,
+                {
+                  color:
+                    item.buttonTextColor ||
+                    "#111",
+                },
+              ]}
+            >
+              {item.buttonTitle}
+            </Text>
+          </View>
+
+          <View style={styles.offerAccent} />
+        </View>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
           </View>
 
           <View style={styles.staticCtaSection}>
