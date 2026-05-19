@@ -20,6 +20,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import GreetingComponent from "./GreetingComponent";
 import messaging from "@react-native-firebase/messaging";
 import useSessionStore from "../store/useSessionStore";
+import orderingStore from "../store/orderingStore";
 
 const { width } = Dimensions.get("window");
 
@@ -67,12 +68,33 @@ export default function HomeScreen({
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
   const { user } = useSessionStore();
+  const { getCatalogItems } = orderingStore();
 
   const navigateToRedirectTarget = (target) => {
     const routeName = resolveNavigationTarget(target);
 
     if (routeName) {
       navigation.navigate(routeName);
+    }
+  };
+
+  const handleCategoryCardPress = (buttonLink) => {
+    if (!buttonLink || typeof buttonLink !== "string") return;
+
+    if (buttonLink === "shopNow") {
+      navigation.navigate("Order", { openCatalogPopup: true });
+      return;
+    }
+
+    // Match pattern like /categories-{40} or /categories-40
+    const match = buttonLink.match(/^\/categories[-_]\{?(\d+)\}?$/);
+
+    if (match) {
+      const catalogModelId = Number(match[1]);
+      getCatalogItems(catalogModelId);
+      navigation.navigate("Order");
+    } else {
+      navigateToRedirectTarget(buttonLink);
     }
   };
 
@@ -197,135 +219,137 @@ export default function HomeScreen({
   }, [currentIndex, homeBanner?.length]);
 
   /* ================= UI ================= */
-/* ================= UI ================= */
+  /* ================= UI ================= */
 
-console.log(
-  uiConfig?.homeBgColorGradient,
-  "uiConfig?.homeBgColorGradienthhhh"
-);
+  console.log(
+    uiConfig?.homeBgColorGradient,
+    "uiConfig?.homeBgColorGradienthhhh"
+  );
 
-const getGradientColors = () => {
-  let gradientData = uiConfig?.homeBgColorGradient;
+  const getGradientColors = () => {
+    let gradientData = uiConfig?.homeBgColorGradient;
 
-  // Handle stringified array from API
-  if (typeof gradientData === "string") {
-    try {
-      gradientData = JSON.parse(gradientData);
-      console.log("Parsed Gradient:", gradientData);
-    } catch (e) {
-      console.log("Gradient parse error:", e);
+    // Handle stringified array from API
+    if (typeof gradientData === "string") {
+      try {
+        gradientData = JSON.parse(gradientData);
+        console.log("Parsed Gradient:", gradientData);
+      } catch (e) {
+        console.log("Gradient parse error:", e);
+      }
     }
-  }
 
-  // Validate gradient array
-  if (Array.isArray(gradientData)) {
-    const colors = gradientData
-      .map((color) => String(color).trim())
-      .filter(
-        (color) =>
-          color &&
-          color.length > 0 &&
-          color !== "null" &&
-          color !== "undefined"
-      );
+    // Validate gradient array
+    if (Array.isArray(gradientData)) {
+      const colors = gradientData
+        .map((color) => String(color).trim())
+        .filter(
+          (color) =>
+            color &&
+            color.length > 0 &&
+            color !== "null" &&
+            color !== "undefined"
+        );
 
-    console.log("Filtered Colors:", colors);
+      console.log("Filtered Colors:", colors);
 
-    if (colors.length >= 2) {
-      console.log("Using gradient:", colors);
-      return colors;
+      if (colors.length >= 2) {
+        console.log("Using gradient:", colors);
+        return colors;
+      }
     }
-  }
 
-  // Fallback solid color
-  const solidColor = uiConfig?.homeBgColor || "#0B0B0F";
+    // Fallback solid color
+    const solidColor = uiConfig?.homeBgColor || "#0B0B0F";
 
-  console.log("Using solid color:", solidColor);
+    console.log("Using solid color:", solidColor);
 
-  return [solidColor, solidColor];
-};
+    return [solidColor, solidColor];
+  };
 
-const getTextColorForBackground = (bgColor) => {
-  if (!bgColor || typeof bgColor !== "string") {
+  const getTextColorForBackground = (bgColor) => {
+    if (!bgColor || typeof bgColor !== "string") {
+      return "#fff";
+    }
+
+    let color = bgColor.trim().toLowerCase();
+
+    if (color.startsWith("#")) {
+      if (color.length === 4) {
+        color = color.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/, "#$1$1$2$2$3$3");
+      }
+
+      if (color.length === 7) {
+        const r = parseInt(color.substr(1, 2), 16);
+        const g = parseInt(color.substr(3, 2), 16);
+        const b = parseInt(color.substr(5, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 186 ? "#000" : "#fff";
+      }
+    }
+
+    if (color.startsWith("rgb")) {
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (match) {
+        const r = Number(match[1]);
+        const g = Number(match[2]);
+        const b = Number(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 186 ? "#000" : "#fff";
+      }
+    }
+
     return "#fff";
-  }
+  };
 
-  let color = bgColor.trim().toLowerCase();
+  const openSocialLink = async (url) => { try { if (!url) return; const supported = await Linking.canOpenURL(url); if (supported) { await Linking.openURL(url); } } catch (e) { console.log("Social Link Error:", e); } };
 
-  if (color.startsWith("#")) {
-    if (color.length === 4) {
-      color = color.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/, "#$1$1$2$2$3$3");
-    }
+  const gradientColors = getGradientColors();
+  const quickActionTextColor = getTextColorForBackground(gradientColors?.[0]);
+  console.log(uiConfig, "uiConfighhh");
 
-    if (color.length === 7) {
-      const r = parseInt(color.substr(1, 2), 16);
-      const g = parseInt(color.substr(3, 2), 16);
-      const b = parseInt(color.substr(5, 2), 16);
-      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      return brightness > 186 ? "#000" : "#fff";
-    }
-  }
+  const socialData = Array.isArray(uiConfig?.socialPages)
+    ? uiConfig?.socialPages?.[0]
+    : {};
 
-  if (color.startsWith("rgb")) {
-    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) {
-      const r = Number(match[1]);
-      const g = Number(match[2]);
-      const b = Number(match[3]);
-      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      return brightness > 186 ? "#000" : "#fff";
-    }
-  }
+  const staticSocialPages = [
+    {
+      id: "s1",
+      title: "Facebook",
+      icon: "facebook-square",
+      url: socialData?.facebookLink || "",
+      color: "#1877F2",
+    },
+    {
+      id: "s2",
+      title: "Instagram",
+      icon: "instagram",
+      url: socialData?.instagramLink || "",
+      color: "#E1306C",
+    },
+    {
+      id: "s3",
+      title: "YouTube",
+      icon: "youtube-play",
+      url: socialData?.youtubeLink || "",
+      color: "#FF0000",
+    },
+  ];
 
-  return "#fff";
-};
+  const staticPatternCards = Array.isArray(uiConfig?.HomeExploreCategories) ? uiConfig?.HomeExploreCategories : [];
 
-const openSocialLink = async (url) => { try { if (!url) return; const supported = await Linking.canOpenURL(url); if (supported) { await Linking.openURL(url); } } catch (e) { console.log("Social Link Error:", e); } };
+  const staticOfferCards = Array.isArray(uiConfig?.homeSectionOffers) ? uiConfig?.homeSectionOffers : [];
 
-const gradientColors = getGradientColors();
-const quickActionTextColor = getTextColorForBackground(gradientColors?.[0]);
-console.log(uiConfig,"uiConfighhh");
+  console.log(gradientColors, "gradientColors");
 
-const socialData = Array.isArray(uiConfig?.socialPages)
-  ? uiConfig?.socialPages?.[0]
-  : {};
-
-const staticSocialPages = [
-  {
-    id: "s1",
-    title: "Facebook",
-    icon: "facebook-square",
-    url: socialData?.facebookLink || "",
-    color: "#1877F2",
-  },
-  {
-    id: "s2",
-    title: "Instagram",
-    icon: "instagram",
-    url: socialData?.instagramLink || "",
-    color: "#E1306C",
-  },
-  {
-    id: "s3",
-    title: "YouTube",
-    icon: "youtube-play",
-    url: socialData?.youtubeLink || "",
-    color: "#FF0000",
-  },
-];
-
-const staticPatternCards = Array.isArray( uiConfig?.HomeExploreCategories ) ? uiConfig?.HomeExploreCategories : [];
-
-const staticOfferCards = Array.isArray( uiConfig?.homeSectionOffers ) ? uiConfig?.homeSectionOffers : [];
-
-console.log(gradientColors, "gradientColors");
-  
 
   return (
     <LinearGradient
       colors={gradientColors}
-      style={{ flex: 1,
-      paddingTop: 10 }}
+      style={{
+        flex: 1,
+        paddingTop: 10
+      }}
     >
       <ScrollView
         style={{
@@ -333,306 +357,306 @@ console.log(gradientColors, "gradientColors");
         }}
         showsVerticalScrollIndicator={false}
       >
-      <GreetingComponent greetingConfig={greetingConfig} backgroundColor={gradientColors?.[0]} />
+        <GreetingComponent greetingConfig={greetingConfig} backgroundColor={gradientColors?.[0]} />
 
-      {/* HERO */}
-      {homeBanner?.length > 0 && (
-        <View>
-          <Animated.FlatList
-            ref={sliderRef}
-            data={homeBanner}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, i) => i.toString()}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
-            )}
-            onMomentumScrollEnd={(e) => {
-              const index = Math.round(
-                e.nativeEvent.contentOffset.x / width
-              );
-              setCurrentIndex(index);
-            }}
-            renderItem={({ item }) => (
-              <View style={styles.heroSlide}>
-                <Image source={{ uri: item.image }} style={styles.heroImage} />
-                <View style={styles.heroOverlay} />
+        {/* HERO */}
+        {homeBanner?.length > 0 && (
+          <View>
+            <Animated.FlatList
+              ref={sliderRef}
+              data={homeBanner}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, i) => i.toString()}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false }
+              )}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(
+                  e.nativeEvent.contentOffset.x / width
+                );
+                setCurrentIndex(index);
+              }}
+              renderItem={({ item }) => (
+                <View style={styles.heroSlide}>
+                  <Image source={{ uri: item.image }} style={styles.heroImage} />
+                  <View style={styles.heroOverlay} />
 
-                <View style={styles.heroContent}>
-                  <Text style={styles.heroTitle}>{item.title}</Text>
+                  <View style={styles.heroContent}>
+                    <Text style={[styles.heroTitle, { color: item?.textColor || "#FFFFFF" }]}>{item.title}</Text>
 
-                  {item.subTitle && (
-                    <Text style={styles.heroSub}>{item.subTitle}</Text>
-                  )}
+                    {item.subTitle && (
+                      <Text style={[styles.heroSub, { color: item?.textColor || "#E0E0E0" }]}>{item.subTitle}</Text>
+                    )}
 
-                  {item.linkText && (
-                    <TouchableOpacity
-                      style={styles.heroButton}
-                      onPress={() => {
-                        navigateToRedirectTarget(item.inAppPathRedirect);
-                      }}
-                    >
-                      <Text style={styles.heroButtonText}>
-                        {item.linkText}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            )}
-          />
-
-          <View style={styles.indicatorContainer}>
-            {homeBanner.map((_, index) => {
-              const widthAnim = scrollX.interpolate({
-                inputRange: [
-                  (index - 1) * width,
-                  index * width,
-                  (index + 1) * width,
-                ],
-                outputRange: [8, 24, 8],
-                extrapolate: "clamp",
-              });
-
-              return (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    {
-                      width: widthAnim,
-                      backgroundColor:
-                        index === currentIndex ? "#E50914" : "#444",
-                    },
-                  ]}
-                />
-              );
-            })}
-          </View>
-        </View>
-      )}
-
-      {/* CTA */}
-      {homeSlider?.length > 0 && (
-        <View style={styles.ctaWrapper}>
-          <Text style={[styles.sectionTitle, { color: quickActionTextColor }]}>Quick Actions</Text>
-
-          <FlatList
-            data={homeSlider}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, i) => i.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.ctaCard}
-                onPress={() => {
-                  navigateToRedirectTarget(item.inAppPathRedirect);
-                }}
-              >
-                <Image source={{ uri: item.image }} style={styles.ctaImage} />
-                <View style={styles.ctaOverlay} />
-                <Text style={styles.ctaTitle}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-          />
-
-          <View style={styles.patternSection}>
-            <Text style={[styles.patternHeader, { color: quickActionTextColor }]}>Explore Categories</Text>
-<View style={styles.patternGrid}>
-  {staticPatternCards.map((item, index) => {
-    const bgColor =
-      item.backgroundColor ||
-      item.background ||
-      "#3CB371";
-
-    const textColor =
-      getTextColorForBackground(bgColor);
-
-    return (
-      <TouchableOpacity
-        key={item.id || item.title || index}
-        style={[
-          styles.patternCard,
-          {
-            backgroundColor: bgColor,
-          },
-        ]}
-        onPress={() =>
-          navigateToRedirectTarget(
-            item.buttonLink
-          )
-        }
-      >
-        <Image
-          source={{
-            uri: item.backgroundImage,
-          }}
-          style={styles.patternImage}
-        />
-
-        <LinearGradient
-          colors={[
-            "rgba(0,0,0,0)",
-            `${bgColor}20`,
-            `${bgColor}CC`,
-            `${bgColor}`,
-          ]}
-          end={{ x: 0.15, y: 0.1 }}
-          start={{ x: 0.9, y: 1 }}
-          style={styles.patternGradient}
-        >
-          <View style={styles.patternContent}>
-            <Text
-              style={[
-                styles.patternTitle,
-                { color: textColor },
-              ]}
-            >
-              {item.title}
-            </Text>
-
-            <Text
-              style={[
-                styles.patternSubtitle,
-                { color: textColor },
-              ]}
-            >
-              {item.discription}
-            </Text>
-
-            <View
-              style={[
-                styles.pricePill,
-                {
-                  backgroundColor:
-                    item.buttonBackgroundColor ||
-                    "#fff",
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.pricePillText,
-                  {
-                    color:
-                      item.buttonTextColor ||
-                      "#111",
-                  },
-                ]}
-              >
-                {item.buttonTitle}
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  })}
-</View>
-          </View>
-
-          <View style={styles.offerSection}>
-            <Text style={[styles.offerHeader, { color: quickActionTextColor }]}>Offers</Text>
-<View style={styles.offerGrid}>
-  {staticOfferCards.map((item, index) => {
-    const bgColor =
-      item.backgroundColor || "#D2232A";
-
-    const textColor =
-      getTextColorForBackground(bgColor);
-
-    return (
-      <TouchableOpacity
-        key={item.id || item.title || index}
-        style={[
-          styles.offerCard,
-          {
-            backgroundColor: bgColor,
-          },
-        ]}
-        onPress={() =>
-          navigateToRedirectTarget(
-            item.buttonLinks
-          )
-        }
-      >
-        <View style={styles.offerContent}>
-          <Text
-            style={[
-              styles.offerTitle,
-              { color: textColor },
-            ]}
-          >
-            {item.title}
-          </Text>
-
-          <Text
-            style={[
-              styles.offerDescription,
-              { color: textColor },
-            ]}
-          >
-            {item.discription}
-          </Text>
-        </View>
-
-        <View style={styles.offerFooter}>
-          <View
-            style={[
-              styles.offerButton,
-              {
-                backgroundColor:
-                  item.buttonBackgroundColor ||
-                  "#fff",
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.offerButtonText,
-                {
-                  color:
-                    item.buttonTextColor ||
-                    "#111",
-                },
-              ]}
-            >
-              {item.buttonTitle}
-            </Text>
-          </View>
-
-          <View style={styles.offerAccent} />
-        </View>
-      </TouchableOpacity>
-    );
-  })}
-</View>
-
-          </View>
-
-          <View style={styles.staticCtaSection}>
-            <Text style={[styles.staticCtaHeader, { color: quickActionTextColor }]}>Social Pages</Text>
-            <View style={styles.socialRow}>
-              {staticSocialPages.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.socialCard, { backgroundColor: item.color }]}
-                  onPress={() => openSocialLink(item.url)}
-                >
-                  <View style={styles.socialIconWrapper}>
-                    <FontAwesome name={item.icon} size={28} color="#fff" />
+                    {item.linkText && (
+                      <TouchableOpacity
+                        style={[styles.heroButton, { backgroundColor: item?.buttonBackgroundColor || "pink" }]}
+                        onPress={() => {
+                          navigateToRedirectTarget(item.inAppPathRedirect);
+                        }}
+                      >
+                        <Text style={[styles.heroButtonText, { color: item?.buttonTextColor || "#FFFFFF" }]}>
+                          {item.linkText}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                  <Text style={styles.socialTitle}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
+                </View>
+              )}
+            />
+
+            <View style={styles.indicatorContainer}>
+              {homeBanner.map((_, index) => {
+                const widthAnim = scrollX.interpolate({
+                  inputRange: [
+                    (index - 1) * width,
+                    index * width,
+                    (index + 1) * width,
+                  ],
+                  outputRange: [8, 4, 8],
+                  extrapolate: "clamp",
+                });
+
+                return (
+                  <Animated.View
+                    key={index}
+                    style={[
+                      styles.indicator,
+                      {
+                        width: widthAnim,
+                        backgroundColor:
+                          index === currentIndex ? "#fff" : "#444",
+                      },
+                    ]}
+                  />
+                );
+              })}
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      <View style={{ height: 40 }} />
+        {/* CTA */}
+        {homeSlider?.length > 0 && (
+          <View style={styles.ctaWrapper}>
+            <Text style={[styles.sectionTitle, { color: quickActionTextColor }]}>Quick Actions</Text>
+
+            <FlatList
+              data={homeSlider}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, i) => i.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.ctaCard}
+                  onPress={() => {
+                    navigateToRedirectTarget(item.inAppPathRedirect);
+                  }}
+                >
+                  <Image source={{ uri: item.image }} style={styles.ctaImage} />
+                  <View style={styles.ctaOverlay} />
+                  <Text style={styles.ctaTitle}>{item.title}</Text>
+                </TouchableOpacity>
+              )}
+            />
+
+            <View style={styles.patternSection}>
+              <Text style={[styles.patternHeader, { color: quickActionTextColor }]}>Explore Categories</Text>
+              <View style={styles.patternGrid}>
+                {staticPatternCards.map((item, index) => {
+                  const bgColor =
+                    item.backgroundColor ||
+                    item.background ||
+                    "#3CB371";
+
+                  const textColor =
+                    getTextColorForBackground(bgColor);
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id || item.title || index}
+                      style={[
+                        styles.patternCard,
+                        {
+                          backgroundColor: bgColor,
+                        },
+                      ]}
+                      onPress={() =>
+                        handleCategoryCardPress(
+                          item.buttonLink
+                        )
+                      }
+                    >
+                      <Image
+                        source={{
+                          uri: item.backgroundImage,
+                        }}
+                        style={styles.patternImage}
+                      />
+
+                      <LinearGradient
+                        colors={[
+                          "rgba(0,0,0,0)",
+                          `${bgColor}20`,
+                          `${bgColor}CC`,
+                          `${bgColor}`,
+                        ]}
+                        end={{ x: 0.15, y: 0.1 }}
+                        start={{ x: 0.9, y: 1 }}
+                        style={styles.patternGradient}
+                      >
+                        <View style={styles.patternContent}>
+                          <Text
+                            style={[
+                              styles.patternTitle,
+                              { color: textColor },
+                            ]}
+                          >
+                            {item.title}
+                          </Text>
+
+                          <Text
+                            style={[
+                              styles.patternSubtitle,
+                              { color: textColor },
+                            ]}
+                          >
+                            {item.discription}
+                          </Text>
+
+                          <View
+                            style={[
+                              styles.pricePill,
+                              {
+                                backgroundColor:
+                                  item.buttonBackgroundColor ||
+                                  "#fff",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.pricePillText,
+                                {
+                                  color:
+                                    item.buttonTextColor ||
+                                    "#111",
+                                },
+                              ]}
+                            >
+                              {item.buttonTitle}
+                            </Text>
+                          </View>
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.offerSection}>
+              <Text style={[styles.offerHeader, { color: quickActionTextColor }]}>Offers</Text>
+              <View style={styles.offerGrid}>
+                {staticOfferCards.map((item, index) => {
+                  const bgColor =
+                    item.backgroundColor || "#D2232A";
+
+                  const textColor =
+                    getTextColorForBackground(bgColor);
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id || item.title || index}
+                      style={[
+                        styles.offerCard,
+                        {
+                          backgroundColor: bgColor,
+                        },
+                      ]}
+                      onPress={() =>
+                        handleCategoryCardPress(
+                          item.buttonLinks
+                        )
+                      }
+                    >
+                      <View style={styles.offerContent}>
+                        <Text
+                          style={[
+                            styles.offerTitle,
+                            { color: textColor },
+                          ]}
+                        >
+                          {item.title}
+                        </Text>
+
+                        <Text
+                          style={[
+                            styles.offerDescription,
+                            { color: textColor },
+                          ]}
+                        >
+                          {item.discription}
+                        </Text>
+                      </View>
+
+                      <View style={styles.offerFooter}>
+                        <View
+                          style={[
+                            styles.offerButton,
+                            {
+                              backgroundColor:
+                                item.buttonBackgroundColor ||
+                                "#fff",
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.offerButtonText,
+                              {
+                                color:
+                                  item.buttonTextColor ||
+                                  "#111",
+                              },
+                            ]}
+                          >
+                            {item.buttonTitle}
+                          </Text>
+                        </View>
+
+                        <View style={styles.offerAccent} />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+            </View>
+
+            <View style={styles.staticCtaSection}>
+              <Text style={[styles.staticCtaHeader, { color: quickActionTextColor }]}>Social Pages</Text>
+              <View style={styles.socialRow}>
+                {staticSocialPages.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.socialCard, { backgroundColor: item.color }]}
+                    onPress={() => openSocialLink(item.url)}
+                  >
+                    <View style={styles.socialIconWrapper}>
+                      <FontAwesome name={item.icon} size={28} color="#fff" />
+                    </View>
+                    <Text style={styles.socialTitle}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View style={{ height: 40 }} />
       </ScrollView>
     </LinearGradient>
   );
@@ -641,8 +665,8 @@ console.log(gradientColors, "gradientColors");
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  heroSlide: { width, height: 300,justifyContent: "center", alignItems: "center" },
-  heroImage: { width: "100%", height: "100%",borderRadius: 0 },
+  heroSlide: { width, height: 300, justifyContent: "center", alignItems: "center" },
+  heroImage: { width: "100%", height: "100%", borderRadius: 0 },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
     // backgroundColor: "rgba(0,0,0,0.1)",
@@ -652,7 +676,7 @@ const styles = StyleSheet.create({
   heroSub: { color: "#ccc", marginTop: 6, fontSize: 14 },
   heroButton: {
     marginTop: 16,
-    backgroundColor: "#E50914",
+    // backgroundColor: "#E50914",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
@@ -697,7 +721,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 192,
   },
-  
+
   patternIcon: {
     width: 44,
     height: 44,
@@ -851,11 +875,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   patternGradient: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  height: 120,
-  justifyContent: "flex-end",
-},
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    justifyContent: "flex-end",
+  },
 });
+
+

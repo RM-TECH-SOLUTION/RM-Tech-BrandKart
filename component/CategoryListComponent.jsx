@@ -49,6 +49,7 @@ const CategoryListComponent = ({
 
   const isLoggedIn = useSessionStore((state) => state.isLoggedIn);
 
+
   const requireAuthBeforeAction = () => {
     if (isLoggedIn) return true;
 
@@ -81,7 +82,7 @@ const CategoryListComponent = ({
   const gridColumns = uiConfig?.gridColumns || 2;
 
   const CARD_WIDTH =
-    (width - 42 - (gridColumns - 1) * 12) / gridColumns;
+    (width - 42 - (gridColumns - 1) * 20) / gridColumns;
 
   const dynamicStyles = styles(uiConfig, CARD_WIDTH);
   const pdpQty = cartMap[
@@ -274,14 +275,14 @@ const CategoryListComponent = ({
 
             <View style={{ flexDirection: "column", alignItems: "center", marginTop: 4 }}>
               <Text style={
-                { color: uiConfig?.primaryColor || "#000", fontSize: 16, fontWeight: "bold", marginTop: 4 }
+                { color: uiConfig?.priceColor || "#000", fontSize: 16, fontWeight: "bold", marginTop: 4 }
               }>
                 ₹{activeVariant?.price || item.price}
               </Text>
               {(activeVariant?.compare_price || item?.compare_price) && (
                 <Text
                   style={{
-                    color: "#888",
+                    color: uiConfig?.qtyBgColor || "#888",
                     textDecorationLine: "line-through",
                     marginLeft: 6
                   }}
@@ -479,9 +480,9 @@ const CategoryListComponent = ({
                   <>
                     <TouchableOpacity
                       onPress={() => setSelectedMainCatalogue(null)}
-                      style={{ marginBottom: 10 }}
+                      style={{ marginBottom: 20, padding: 5 }}
                     >
-                      <Text style={{ color: "#fff" }}>
+                      <Text style={{ color: uiConfig?.headerTitleColor || "#fff", fontWeight: "600" }}>
                         ← Back
                       </Text>
                     </TouchableOpacity>
@@ -502,12 +503,14 @@ const CategoryListComponent = ({
       <Modal visible={pdpVisible} transparent animationType="slide" >
 
 
-        <View style={dynamicStyles.modalOverlay}>
+        <View style={[dynamicStyles.modalOverlay, { bottom: 0, justifyContent: "flex-end" }]}>
 
 
           <View style={[dynamicStyles.modalBox2, {
             borderRadius: 24,
-            padding: 16, height: "100%"
+            padding: 16, height: "100%",
+            backgroundColor: uiConfig?.modalBgColor || "#0F0F0F",
+            bottom: 0
           }]}>
 
             {/* BACK BUTTON */}
@@ -528,10 +531,10 @@ const CategoryListComponent = ({
                   paddingVertical: 6,
                   paddingHorizontal: 12,
                   borderRadius: 20,
-                  backgroundColor: "#1A1A1A",
+                  backgroundColor: uiConfig?.buttonColor,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>
+                <Text style={{ color: uiConfig?.buttonTextColor || "#fff", fontWeight: "700" }}>
                   ← Back
                 </Text>
               </TouchableOpacity>
@@ -588,7 +591,7 @@ const CategoryListComponent = ({
                       <Text style={{
                         fontSize: 18,
                         fontWeight: "800",
-                        color: "#fff",
+                        color: uiConfig?.modalTitleColor || "#fff",
                         marginTop: 10
                       }}>
                         {selectedProduct.name}
@@ -596,7 +599,7 @@ const CategoryListComponent = ({
 
                       {/* BRAND */}
                       {selectedProduct.brand && (
-                        <Text style={{ color: "#aaa", marginTop: 4 }}>
+                        <Text style={{ color: uiConfig?.modalTitleColor || "#fff", marginTop: 4 }}>
                           {selectedProduct.brand}
                         </Text>
                       )}
@@ -605,7 +608,7 @@ const CategoryListComponent = ({
                       <View style={{ flexDirection: "row", marginTop: 6 }}>
 
                         <Text style={{
-                          color: "#fff",
+                          color: uiConfig?.priceColor || "#E50914",
                           fontSize: 18,
                           fontWeight: "700"
                         }}>
@@ -617,7 +620,7 @@ const CategoryListComponent = ({
 
                           <Text style={{
                             marginLeft: 10,
-                            color: "#888",
+                            color: uiConfig?.qtyBgColor || "#888",
                             textDecorationLine: "line-through"
                           }}>
                             ₹{selectedVariant?.compare_price || selectedProduct.compare_price}
@@ -627,7 +630,7 @@ const CategoryListComponent = ({
                         )}
 
                       </View>
-                      <Text style={{ color: "#fff" }}>Stock-{selectedVariant?.stock || selectedProduct?.stock}</Text>
+                      <Text style={{ color: uiConfig?.qtyBgColor || "#fff" }}>Stock-{selectedVariant?.stock || selectedProduct?.stock}</Text>
 
                       {/* VARIANTS */}
                       {/* {console.log(selectedProduct.variants, "selectedProduct.variants")} */}
@@ -637,7 +640,7 @@ const CategoryListComponent = ({
                         <View style={{ marginTop: 16 }}>
 
                           <Text style={{
-                            color: "#fff",
+                            color: uiConfig?.modalTitleColor || "#fff",
                             fontWeight: "700",
                             marginBottom: 8
                           }}>
@@ -665,18 +668,18 @@ const CategoryListComponent = ({
                                       paddingHorizontal: 14,
                                       borderRadius: 12,
                                       marginRight: 10,
-                                      borderWidth: 1,
-                                      borderColor: active ? "#E50914" : "#444",
+                                      borderWidth: 2,
+                                      borderColor: active ? uiConfig?.buttonColor || "#E50914" : "#444",
                                       backgroundColor: !isStock
                                         ? "#333"
                                         : active
-                                          ? "#E50914"
-                                          : "#1A1A1A",
+                                          ? uiConfig?.buttonColor || "#E50914"
+                                          : "gray",
                                       opacity: isStock ? 1 : 0.5
                                     }}
                                     onPress={() => isStock && setSelectedVariant(item)}
                                   >
-                                    <Text style={{ color: "#fff" }}>
+                                    <Text style={{ color: uiConfig?.buttonTextColor || "#fff" }}>
                                       {item.variant_name}
                                       {!isStock ? " (Out)" : ""}
                                     </Text>
@@ -699,7 +702,7 @@ const CategoryListComponent = ({
                         <View style={{ marginTop: 16 }}>
 
                           <Text style={{
-                            color: "#fff",
+                            color: uiConfig?.modalTitleColor || "#fff",
                             fontWeight: "700",
                             marginBottom: 6
                           }}>
@@ -707,7 +710,7 @@ const CategoryListComponent = ({
                           </Text>
 
                           <Text style={{
-                            color: "#aaa",
+                            color: uiConfig?.modalTitleColor || "#aaa",
                             fontSize: 13,
                             lineHeight: 20
                           }}>
@@ -721,7 +724,7 @@ const CategoryListComponent = ({
                             >
 
                               <Text style={{
-                                color: "#E50914",
+                                color: uiConfig?.buttonColor || "#E50914",
                                 marginTop: 6,
                                 fontWeight: "600"
                               }}>
@@ -753,13 +756,13 @@ const CategoryListComponent = ({
                 left: 0,
                 right: 0,
                 padding: 15,
-                backgroundColor: "#111"
+                backgroundColor: uiConfig?.modalBgColor || "#111"
               }}
             >
 
               <TouchableOpacity
                 style={{
-                  backgroundColor: "#E50914",
+                  backgroundColor: uiConfig?.buttonColor || "#E50914",
                   paddingVertical: 14,
                   borderRadius: 16,
                   alignItems: "center",
@@ -801,7 +804,7 @@ const CategoryListComponent = ({
               >
 
                 <Text style={{
-                  color: "#fff",
+                  color: uiConfig?.buttonTextColor || "#fff",
                   fontWeight: "800"
                 }}>
                   {selectedVariant?.stock === 0
@@ -880,7 +883,7 @@ const styles = (ui, CARD_WIDTH) =>
     headerTitle: {
       fontSize: 24,
       fontWeight: "800",
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.headerTitleColor || "#E50914",
       marginVertical: 20
     },
 
@@ -897,16 +900,18 @@ const styles = (ui, CARD_WIDTH) =>
       backgroundColor: ui?.cardBgColor || "#1A1A1A",
       padding: 14,
       borderRadius: 16,
-      marginBottom: 20
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)"
     },
 
     selectedLabel: {
-      color: "#fff",
+      color: ui?.cardTextColor || "#fff",
       fontWeight: "700"
     },
 
     changeText: {
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.cardTextColor || "#E50914",
       fontWeight: "600"
     },
 
@@ -914,23 +919,27 @@ const styles = (ui, CARD_WIDTH) =>
       width: CARD_WIDTH,
       backgroundColor: ui?.cardBgColor || "#1A1A1A",
       borderRadius: 20,
-      padding: 14
+      padding: 14,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)"
     },
 
     image: {
       width: "100%",
       height: 110,
       borderRadius: 14,
-      marginBottom: 10
+      marginBottom: 10,
+      resizeMode: "contain"
     },
 
     cardText: {
-      color: "#fff",
+      color: ui?.cardTextColor || "#fff",
       fontWeight: "700"
     },
 
     cardText2: {
-      color: "#fff",
+      color: ui?.cardTextColor || "#fff",
       fontWeight: "700",
       textAlign: "center"
     },
@@ -941,7 +950,7 @@ const styles = (ui, CARD_WIDTH) =>
     },
 
     addButton: {
-      backgroundColor: "#E50914",
+      backgroundColor: ui?.buttonColor || "#E50914",
       paddingVertical: 8,
       borderRadius: 12,
       marginTop: 10,
@@ -949,7 +958,7 @@ const styles = (ui, CARD_WIDTH) =>
     },
 
     addButtonText: {
-      color: "#fff",
+      color: ui?.buttonTextColor || "#fff",
       fontWeight: "700"
     },
 
@@ -1006,21 +1015,21 @@ const styles = (ui, CARD_WIDTH) =>
 
     modalOverlay: {
       flex: 1,
-      backgroundColor: ui?.pageBgColor || "#0F0F0F",
+      backgroundColor: "rgba(0,0,0,0.4)",
       justifyContent: "center",
       alignItems: "center"
     },
 
     modalBox: {
       width: "95%",
-      backgroundColor: "#1A1A1A",
+      backgroundColor: ui?.pageBgColor || "#0F0F0F",
       borderRadius: 24,
       padding: 16,
       maxHeight: "80%"
     },
 
     modalTitle: {
-      color: "#E50914",
+      color: ui?.headerTitleColor || "#fff",
       fontSize: 20,
       fontWeight: "800",
       textAlign: "center",

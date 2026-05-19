@@ -33,8 +33,10 @@ const WalkthroughComponent = ({
       <View style={styles.overlay} />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>
+        <Text style={[styles.title, { color: walkthroughConfig?.walkthroughTitleColor || "#FFFFFF" }]}>
+          {item.title}
+        </Text>
+        <Text style={[styles.description, { color: walkthroughConfig?.walkthroughDescriptionColor || "#E0E0E0" }]}>
           {item.description}
         </Text>
       </Animated.View>
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
   image: { width: "100%", height: "100%" },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    // backgroundColor: "rgba(0,0,0,0.30)",
   },
   content: {
     position: "absolute",

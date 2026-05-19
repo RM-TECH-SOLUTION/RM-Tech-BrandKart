@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    // backgroundColor: "rgba(0,0,0,0.1)",
   },
   centerContainer: {
     flex: 1,
