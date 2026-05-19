@@ -41,17 +41,19 @@ const useAuthStore = create((set) => ({
         session.setUser(result.user);
 
         set({ success: true, errorMessage: null });
+        return { success: true, message: result?.message || "Login successful" };
       } else {
-        Alert.alert("Error", result?.message || "Invalid credentials");
         set({
           success: false,
           errorMessage: result?.message || "Invalid credentials",
         });
+        return { success: false, message: result?.message || "Invalid credentials" };
       }
     } catch (error) {
       console.log("LOGIN ERROR 👉", error.message);
-      set({ success: false, errorMessage: error.message });
-      Alert.alert("Error", "Network error: " + error.message);
+      const message = error?.message || "Something went wrong";
+      set({ success: false, errorMessage: message });
+      return { success: false, message };
     } finally {
       set({ loading: false });
     }
@@ -60,82 +62,81 @@ const useAuthStore = create((set) => ({
   /* ================= REGISTER ================= */
 
   registerUser: async (
-  name,
-  email,
-  phone,
-  password,
-  referralCode = null,
-  gender = null
-) => {
+    name,
+    email,
+    phone,
+    password,
+    referralCode = null,
+    gender = null
+  ) => {
 
-  set({ errorMessage: null, success: false });
+    set({ errorMessage: null, success: false });
 
-  if (!name || !email || !phone || !password) {
-    Alert.alert("Error", "All fields are required");
-    return;
-  }
-
-  set({ loading: true });
-
-  try {
-
-    const payload = {
-      name,
-      email,
-      phone,
-      password,
-      referral_code: referralCode,
-      gender
-    };
-
-    const result = await apiClient.post(
-      apiClient.Urls.register,
-      payload
-    );
-
-    if (result?.success) {
-
-      Alert.alert("Success", "Registered successfully!");
-
-      const session = useSessionStore.getState();
-      session.setUser(result.user);
-
-      set({ success: true, errorMessage: null });
-
-    } else {
-
-      Alert.alert("Error", result?.message || "Registration failed");
-
-      set({
-        success: false,
-        errorMessage: result?.message || "Registration failed",
-      });
-
+    if (!name || !email || !phone || !password) {
+      Alert.alert("Error", "All fields are required");
+      return;
     }
 
-  } catch (error) {
+    set({ loading: true });
 
-    console.log("REGISTER ERROR 👉", error.message);
+    try {
 
-    set({ success: false, errorMessage: error.message });
+      const payload = {
+        name,
+        email,
+        phone,
+        password,
+        referral_code: referralCode,
+        gender
+      };
 
-    Alert.alert("Error", "Network error: " + error.message);
+      const result = await apiClient.post(
+        apiClient.Urls.register,
+        payload
+      );
 
-  } finally {
+      if (result?.success) {
 
-    set({ loading: false });
+        Alert.alert("Success", "Registered successfully!");
 
-  }
-},
+        const session = useSessionStore.getState();
+        session.setUser(result.user);
 
-      saveUserAddress: async ( address) => {
- 
+        set({ success: true, errorMessage: null });
+        return { success: true, message: result?.message || "Registered successfully" };
+
+      } else {
+        set({
+          success: false,
+          errorMessage: result?.message || "Registration failed",
+        });
+        return { success: false, message: result?.message || "Registration failed" };
+
+      }
+
+    } catch (error) {
+
+      console.log("REGISTER ERROR 👉", error.message);
+
+      const message = error?.message || "Something went wrong";
+      set({ success: false, errorMessage: message });
+      return { success: false, message };
+
+    } finally {
+
+      set({ loading: false });
+
+    }
+  },
+
+  saveUserAddress: async (address) => {
+
     try {
       const result = await apiClient.post(
         apiClient.Urls.saveUserAddress,
         {
-    address: address
-  }
+          address: address
+        }
       );
 
       if (result?.success) {
@@ -153,21 +154,22 @@ const useAuthStore = create((set) => ({
     }
   },
 
-       getProfile: async ( ) => {
-      const session = useSessionStore.getState();
- 
+  getProfile: async () => {
+    const session = useSessionStore.getState();
+
     try {
       const result = await apiClient.post(
         apiClient.Urls.getProfile,
- 
+
       );
       // console.log(result,"resultv");
-      
+
       if (result?.success) {
-      set({ profile: result?.user
-});
-      session.setProfile(result?.user);
-      } 
+        set({
+          profile: result?.user
+        });
+        session.setProfile(result?.user);
+      }
       return result;
     } catch (error) {
       console.log("SAVE ADDRESS ERROR 👉", error.message);
@@ -182,6 +184,10 @@ const useAuthStore = create((set) => ({
     const session = useSessionStore.getState();
     session.clearSession();
     set({ success: false, errorMessage: null });
+  },
+
+  clearError: () => {
+    set({ errorMessage: null });
   },
 }));
 
