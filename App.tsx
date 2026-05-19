@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { CardStyleInterpolators, createStackNavigator } from "@react-navigation/stack";
 import SplashContainer from "./container/SplashContainer";
 import { StyleSheet } from 'react-native';
 import HomeTabs from "./component/HomeTabs";
@@ -15,22 +15,52 @@ import OrderHistoryContainer from './container/OrderHistoryContainer';
 import MerchantInfoContainer from './container/MerchantInfoContainer';
 
 const Stack = createStackNavigator();
+const appTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: "#111"
+  }
+};
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
-      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+    <NavigationContainer theme={appTheme}>
+      <StatusBar style="light" backgroundColor="#111" />
+      <Stack.Navigator
+        initialRouteName="Splash"
+        detachInactiveScreens={false}
+        screenOptions={{
+          headerShown: false,
+          cardStyle: { backgroundColor: "#111" },
+          cardOverlayEnabled: false
+        }}
+      >
         <Stack.Screen name="Splash" component={SplashContainer} />
         <Stack.Screen name="Walkthrough" component={WalkthroughContainer} />
         <Stack.Screen name="Auth" component={LoginContainer} />
         <Stack.Screen name="Register" component={RegisterContainer} />
         <Stack.Screen name="Home" component={HomeContainer} />
-        <Stack.Screen name="Checkout" component={CheckoutContainer}/>
-       <Stack.Screen
+        <Stack.Screen
+          name="Checkout"
+          component={CheckoutContainer}
+          options={{
+            gestureEnabled: true,
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            cardOverlayEnabled: false,
+            cardStyle: { backgroundColor: "#111" }
+          }}
+        />
+        <Stack.Screen
           name="SavedAddressComponent"
           component={SavedAddressComponent}
-          options={{ headerShown: false }}
+          options={{
+            headerShown: false,
+            gestureEnabled: true,
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            cardOverlayEnabled: false,
+            cardStyle: { backgroundColor: "#111" }
+          }}
         />
         <Stack.Screen
           name="OrderHistoryContainer"
@@ -52,7 +82,7 @@ const styles = StyleSheet.create({
     backgroundColor: "red",
     alignItems: 'center',
     justifyContent: 'center',
-    width:"100%",
-    height:"100%"
+    width: "100%",
+    height: "100%"
   },
 });

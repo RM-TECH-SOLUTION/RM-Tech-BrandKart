@@ -281,7 +281,7 @@ const createStyles = (ui) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 16
+      marginBottom: 16,
     },
 
     heading: {

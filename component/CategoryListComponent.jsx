@@ -966,7 +966,7 @@ const styles = (ui, CARD_WIDTH) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      backgroundColor: "#E50914",
+      backgroundColor: ui?.buttonColor || "#E50914",
       borderRadius: 12,
       paddingVertical: 6,
       paddingHorizontal: 10,
@@ -974,7 +974,7 @@ const styles = (ui, CARD_WIDTH) =>
     },
 
     qtyButton: {
-      backgroundColor: "#fff",
+      backgroundColor: ui?.buttonTextColor || "#E50914",
       width: 26,
       height: 26,
       borderRadius: 8,
@@ -983,7 +983,7 @@ const styles = (ui, CARD_WIDTH) =>
     },
 
     qtyText: {
-      color: "#E50914",
+      color: ui?.buttonColor || "#fff",
       fontWeight: "700"
     },
 
@@ -1000,16 +1000,16 @@ const styles = (ui, CARD_WIDTH) =>
     },
 
     cartButton: {
-      backgroundColor: "#111",
+      backgroundColor: ui?.buttonColor || "#E50914",
       paddingVertical: 16,
       borderRadius: 20,
       alignItems: "center",
       borderWidth: 1,
-      borderColor: "#E50914"
+      borderColor: "rgba(0,0,0,0.2)"
     },
 
     cartText: {
-      color: "#E50914",
+      color: ui?.buttonTextColor || "#fff",
       fontWeight: "800"
     },
 

@@ -22,46 +22,46 @@ const ProfileComponent = ({
   const styles = createStyles(uiConfig);
   const appLink = merchantInfo?.appLink;
   const webLink = merchantInfo?.webLink;
-  const merchantName= merchantInfo?.merchantName
+  const merchantName = merchantInfo?.merchantName
 
   /* ================= SHARE REFERRAL ================= */
   // console.log(merchantInfo,"profileDataprofileData");
-  
 
-const handleShareReferral = async () => {
-  if (!profileData?.referral_code) {
-    Alert.alert("Error", "Referral code not available");
-    return;
-  }
 
-  try {
-
-    const storeName = merchantName || "Our Store";
-
-    let message = `🎉 *Join ${storeName}!* 🎉\n\n`;
-
-    message += `Use my referral code and start earning rewards!\n\n`;
-    message += `🔑 Referral Code: *${profileData.referral_code}*\n\n`;
-
-    if (appLink) {
-      message += `📱 Download the App:\n${appLink}\n\n`;
+  const handleShareReferral = async () => {
+    if (!profileData?.referral_code) {
+      Alert.alert("Error", "Referral code not available");
+      return;
     }
 
-    if (webLink) {
-      message += `🌐 Visit the Website:\n${webLink}\n\n`;
+    try {
+
+      const storeName = merchantName || "Our Store";
+
+      let message = `🎉 *Join ${storeName}!* 🎉\n\n`;
+
+      message += `Use my referral code and start earning rewards!\n\n`;
+      message += `🔑 Referral Code: *${profileData.referral_code}*\n\n`;
+
+      if (appLink) {
+        message += `📱 Download the App:\n${appLink}\n\n`;
+      }
+
+      if (webLink) {
+        message += `🌐 Visit the Website:\n${webLink}\n\n`;
+      }
+
+      message += `✨ Sign up today and enjoy exclusive rewards!\n`;
+      message += `Don't forget to use my code during signup 🚀`;
+
+      await Share.share({
+        message
+      });
+
+    } catch {
+      Alert.alert("Error", "Unable to share referral code");
     }
-
-    message += `✨ Sign up today and enjoy exclusive rewards!\n`;
-    message += `Don't forget to use my code during signup 🚀`;
-
-    await Share.share({
-      message
-    });
-
-  } catch {
-    Alert.alert("Error", "Unable to share referral code");
-  }
-};
+  };
 
   /* ================= LOADER ================= */
 
@@ -119,16 +119,16 @@ const handleShareReferral = async () => {
 
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.email}</Text>
-        <View style={{flexDirection:"row",alignItems:"center",marginTop:4,}}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, }}>
           <Ionicons
             name="call-outline"
             size={18}
             color={uiConfig?.primaryColor || "#E50914"}
-            style={{marginRight:4}}
+            style={{ marginRight: 4 }}
           />
           <Text style={styles.email}>{user.phone}</Text>
         </View>
-        
+
       </View>
 
       {/* LOYALTY POINTS */}
@@ -146,27 +146,27 @@ const handleShareReferral = async () => {
       </View>
 
       {/* REFERRAL SECTION */}
-     <View style={styles.card}>
-  <Text style={styles.sectionTitle}>Your Referral Code</Text>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Your Referral Code</Text>
 
-  <View style={styles.referralBox}>
+        <View style={styles.referralBox}>
 
-    {/* LEFT SIDE → CODE */}
-    <Text style={styles.referralCode}>
-      {profileData?.referral_code || "N/A"}
-    </Text>
+          {/* LEFT SIDE → CODE */}
+          <Text style={styles.referralCode}>
+            {profileData?.referral_code || "N/A"}
+          </Text>
 
-    {/* RIGHT SIDE → SHARE BUTTON */}
-    <TouchableOpacity
-      style={styles.shareButton}
-      onPress={handleShareReferral}
-    >
-      <Ionicons name="share-social-outline" size={16} color="#fff" />
-      <Text style={styles.shareText}>Share</Text>
-    </TouchableOpacity>
+          {/* RIGHT SIDE → SHARE BUTTON */}
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={handleShareReferral}
+          >
+            <Ionicons name="share-social-outline" size={16} color="#fff" />
+            <Text style={styles.shareText}>Share</Text>
+          </TouchableOpacity>
 
-  </View>
-</View>
+        </View>
+      </View>
 
       {/* LOGOUT */}
       <TouchableOpacity
@@ -250,7 +250,7 @@ const createStyles = (ui) =>
       marginLeft: 10,
       fontSize: 15,
       color: ui?.cardTextColor || "#fff",
-      fontWeight:"bold"
+      fontWeight: "bold"
     },
 
     sectionTitle: {
@@ -262,11 +262,11 @@ const createStyles = (ui) =>
     referralBox: {
       backgroundColor: ui?.cardBorderColor || "#2A2A2A",
       flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  borderRadius: 10,
-  padding: 10,
-  marginTop: 8
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderRadius: 10,
+      padding: 10,
+      marginTop: 8
     },
 
     referralCode: {
@@ -319,7 +319,7 @@ const createStyles = (ui) =>
     },
 
     loginButton: {
-      backgroundColor: ui?.primaryColor || "#E50914",
+      backgroundColor: ui?.cardIconColor || "#E50914",
       paddingVertical: 10,
       paddingHorizontal: 30,
       borderRadius: 14

@@ -6,6 +6,8 @@ import useAuthStore from "../store/useAuthStore";
 const RegisterContainer = ({ navigation }) => {
 
   const registerUser = useAuthStore((state) => state.registerUser);
+  const errorMessage = useAuthStore((state) => state.errorMessage);
+  const clearError = useAuthStore((state) => state.clearError);
 
   return (
     <View style={{ flex: 1 }}>
@@ -13,6 +15,8 @@ const RegisterContainer = ({ navigation }) => {
         onLogin={() => navigation.replace("Auth")}
         navigation={navigation}
         registerUser={registerUser}
+        authError={errorMessage}
+        clearAuthError={clearError}
       />
     </View>
   );

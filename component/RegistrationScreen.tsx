@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   Dimensions,
@@ -46,6 +45,8 @@ const isLightColor = (color) => {
 export default function RegistrationScreen({
   onLogin,
   registerUser,
+  authError,
+  clearAuthError,
 }) {
   const { cmsData } = useCmsStore();
 
@@ -111,9 +112,10 @@ export default function RegistrationScreen({
   async function handleSubmit() {
     if (!validate()) return;
 
+    clearAuthError && clearAuthError();
     setLoading(true);
     try {
-      await registerUser(
+      const result = await registerUser(
         name.trim(),
         email.trim(),
         phone.trim(),
@@ -122,7 +124,9 @@ export default function RegistrationScreen({
         gender !== "Select Gender" ? gender : null
       );
 
-      Alert.alert("Success", "Account created successfully");
+      if (!result?.success) {
+        return;
+      }
 
       // Reset form
       setName("");
@@ -134,8 +138,6 @@ export default function RegistrationScreen({
       setErrors({});
 
       onLogin && onLogin();
-    } catch (error) {
-      Alert.alert("Error", "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -201,18 +203,40 @@ export default function RegistrationScreen({
 
             {/* Inputs */}
             {[
-              { label: "Full Name", value: name, setter: setName, key: "name" },
+              {
+                label: "Full Name",
+                value: name,
+                setter: (t) => {
+                  clearAuthError && clearAuthError();
+                  setName(t);
+                },
+                key: "name"
+              },
               {
                 label: "Phone",
                 value: phone,
-                setter: (t) => setPhone(t.replace(/\D/g, "")),
+                setter: (t) => {
+                  clearAuthError && clearAuthError();
+                  setPhone(t.replace(/\D/g, ""));
+                },
                 key: "phone",
               },
-              { label: "Email", value: email, setter: setEmail, key: "email" },
+              {
+                label: "Email",
+                value: email,
+                setter: (t) => {
+                  clearAuthError && clearAuthError();
+                  setEmail(t);
+                },
+                key: "email"
+              },
               {
                 label: "Password",
                 value: password,
-                setter: setPassword,
+                setter: (t) => {
+                  clearAuthError && clearAuthError();
+                  setPassword(t);
+                },
                 key: "password",
                 secure: true,
               },
@@ -248,8 +272,10 @@ export default function RegistrationScreen({
                   placeholder="Referral Code (Optional)"
                   placeholderTextColor="#999"
                   value={referralCode}
-                  onChangeText={(t) =>
-                    setReferralCode(t.toUpperCase())
+                  onChangeText={(t) => {
+                    clearAuthError && clearAuthError();
+                    setReferralCode(t.toUpperCase());
+                  }
                   }
                   style={[
                     styles.input,
@@ -337,13 +363,17 @@ export default function RegistrationScreen({
               )}
             </TouchableOpacity>
 
+            {!!authError && (
+              <Text style={styles.apiErrorText}>{authError}</Text>
+            )}
+
             {/* Footer */}
             <View style={styles.footer}>
               <Text style={{ color: isLightBg ? "#666" : "#ccc" }}>
                 Already have account?
               </Text>
               <TouchableOpacity onPress={onLogin}>
-                <Text style={[styles.loginText,{ color: cmsConfig?.buttonColor || "#E50914"}]}>
+                <Text style={[styles.loginText, { color: cmsConfig?.buttonColor || "#E50914" }]}>
                   {" "}
                   Login
                 </Text>
@@ -415,6 +445,13 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     marginTop: 10,
+  },
+  apiErrorText: {
+    color: "#ff6b6b",
+    textAlign: "center",
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: "600",
   },
   footer: {
     flexDirection: "row",

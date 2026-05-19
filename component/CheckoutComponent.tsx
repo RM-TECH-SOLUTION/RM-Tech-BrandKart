@@ -891,6 +891,8 @@ const createStyles = (ui) =>
       borderRadius: 18,
       flexDirection: "row",
       justifyContent: "space-between",
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)"
     },
     name: {
       color: ui?.cardTextColor || "#fff",
@@ -932,6 +934,8 @@ const createStyles = (ui) =>
       margin: 16,
       padding: 16,
       borderRadius: 18,
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)"
     },
     addressTitle: {
       color: ui?.primaryColor || "#E50914",

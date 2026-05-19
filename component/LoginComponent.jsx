@@ -50,6 +50,8 @@ const LoginComponent = ({
   onSkip,
   loading,
   cmsConfig,
+  errorMessage,
+  onClearError,
 }) => {
   const cardBgColor = cmsConfig?.cardBackgroundColor || "rgba(0,0,0,0.75)";
   const isLightBg = isLightColor(cardBgColor);
@@ -94,7 +96,7 @@ const LoginComponent = ({
           />
 
           <Text style={[styles.title, { color: cmsConfig?.buttonColor || "#E50914" }]}>
-                  
+
             {cmsConfig?.title || "Welcome Back"}
           </Text>
 
@@ -113,13 +115,16 @@ const LoginComponent = ({
             ]}
           >
             <AntDesign name="user" size={18} color={cmsConfig?.inputBorderColor ||
-                  "#E50914"} />
+              "#E50914"} />
             <TextInput
               style={[styles.input, { color: textColor }]}
               placeholder="Email or Phone"
               placeholderTextColor="#999"
               value={identity}
-              onChangeText={setIdentity}
+              onChangeText={(text) => {
+                onClearError?.();
+                setIdentity(text);
+              }}
             />
           </View>
 
@@ -134,14 +139,17 @@ const LoginComponent = ({
             ]}
           >
             <AntDesign name="lock" size={18} color={cmsConfig?.inputBorderColor ||
-                  "#E50914"} />
+              "#E50914"} />
             <TextInput
               style={[styles.input, { color: textColor }]}
               placeholder="Password"
               placeholderTextColor="#999"
               secureTextEntry
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                onClearError?.();
+                setPassword(text);
+              }}
             />
           </View>
 
@@ -179,6 +187,10 @@ const LoginComponent = ({
               </Text>
             )}
           </TouchableOpacity>
+
+          {!!errorMessage && (
+            <Text style={styles.apiErrorText}>{errorMessage}</Text>
+          )}
 
           <View style={styles.footer}>
             <Text style={{ color: isLightBg ? "#666" : "#ccc" }}>
@@ -273,6 +285,13 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  apiErrorText: {
+    color: "#ff6b6b",
+    textAlign: "center",
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: "600",
   },
   footer: {
     flexDirection: "row",

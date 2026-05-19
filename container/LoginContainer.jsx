@@ -8,6 +8,8 @@ import useCmsStore from "../store/useCmsStore";
 const LoginContainer = ({ navigation }) => {
   const loginUser = useAuthStore((state) => state.loginUser);
   const loading = useAuthStore((state) => state.loading);
+  const errorMessage = useAuthStore((state) => state.errorMessage);
+  const clearError = useAuthStore((state) => state.clearError);
 
   const { isLoggedIn } = useSessionStore();
   const { cmsData } = useCmsStore();
@@ -45,6 +47,7 @@ const LoginContainer = ({ navigation }) => {
   }, [cmsData]);
 
   const handleLogin = () => {
+    clearError();
     loginUser(identity, password);
   };
 
@@ -60,6 +63,8 @@ const LoginContainer = ({ navigation }) => {
         onSkip={() => navigation.replace("Home")}
         loading={loading}
         cmsConfig={cmsConfig}
+        errorMessage={errorMessage}
+        onClearError={clearError}
       />
     </View>
   );
