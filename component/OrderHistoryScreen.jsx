@@ -39,6 +39,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
   const titleColor = uiConfigs?.cardTextTitleColor || "#fff";
   const subTitleColor = uiConfigs?.cardTextSubTitleColor || "#aaa";
 
+
   /* ================= PROGRESS BAR ================= */
 
   const renderProgress = (status) => {
@@ -122,7 +123,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
 
           <View style={{marginRight:15}}>
             <Image source={{ uri: image }} style={styles.image} />
-             <Text style={[styles.price,{color:"gold",fontSize:12,}]}>
+             <Text style={[styles.price,{color:uiConfigs?.cardTextTitleColor,fontSize:12,}]}>
               Earn Points:- {item?.earned_points}
             </Text>
           </View>
@@ -171,19 +172,27 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
   /* ================= UI ================= */
 
   return (
-    <SafeAreaView style={[styles.container,{backgroundColor}]} edges={["top"]}>
+    <SafeAreaView   style={[
+    styles.container,
+    {
+      backgroundColor:
+        uiConfigs?.headerBgColor || "#111",
+    },
+  ]}
+  edges={["top"]}
+>
 
-      <StatusBar backgroundColor="#111" barStyle="light-content" />
+      <StatusBar backgroundColor={uiConfigs?.headerBgColor || "#111"} barStyle="light-content" />
 
       {/* HEADER */}
 
-      <View style={styles.header}>
+      <View style={[styles.header,{backgroundColor:uiConfigs?.headerBgColor || "#111"}]}>
 
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
+          <Ionicons name="chevron-back" size={26} color={uiConfigs?.headerTextColor || "#111"} />
         </TouchableOpacity>
 
-        <Text style={[styles.title,{color:titleColor}]}>
+        <Text style={[styles.title,{color:uiConfigs?.headerTextColor || "#111"}]}>
           Order History
         </Text>
 
@@ -192,7 +201,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
       </View>
 
       {/* LIST */}
-
+    <View style={{ flex: 1, backgroundColor: backgroundColor }}>
       <FlatList
         data={orderHistoryResponse}
         keyExtractor={(item) => item.order_id}
@@ -200,7 +209,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20 }}
       />
-
+    </View>
     </SafeAreaView>
   );
 };
@@ -233,7 +242,9 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 16,
     borderRadius: 20,
-    marginBottom: 14
+    marginBottom: 14,
+    borderWidth:1,
+     borderColor:"rgba(0,0,0,0.2)"
   },
 
   image: {

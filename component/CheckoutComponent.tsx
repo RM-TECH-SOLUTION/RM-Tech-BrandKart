@@ -425,7 +425,7 @@ const createOrder = async (orderType) => {
                 <Text style={styles.addressTitle}>Delivery Address</Text>
 
                 <TouchableOpacity onPress={() => setSelectedAddress(null)}>
-                  <Text style={{ color: uiConfig?.primaryColor || "#E50914" }}>
+                  <Text style={{ color: uiConfig?.cardTextColor || "#E50914" }}>
                     Change
                   </Text>
                 </TouchableOpacity>
@@ -722,7 +722,7 @@ const createStyles = (ui) =>
 
     couponContainer: {
       borderWidth: .5,
-      borderColor: ui?.primaryColor || "#E50914",
+      borderColor: "rgba(0,0,0,0.5)",
       padding: 14,
       borderRadius: 12,
       marginBottom: 18,
@@ -797,7 +797,7 @@ const createStyles = (ui) =>
     optionAmount: {
       fontSize: 16,
       fontWeight: "700",
-      color: ui?.primaryColor || "#E50914",
+      color:ui?.priceColor || "#E50914",
     },
 
     /* ================= PRICE BREAKDOWN ================= */
@@ -808,7 +808,7 @@ const createStyles = (ui) =>
       borderRadius: 12,
       marginTop: 10,
       marginBottom: 18,
-      borderColor: ui?.primaryColor || "#E50914",
+      borderColor: "rgba(0,0,0,0.5)",
       borderWidth: .5,
     },
 
@@ -827,7 +827,7 @@ const createStyles = (ui) =>
     priceValue: {
       fontSize: 14,
       fontWeight: "600",
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.priceColor || "#E50914",
     },
 
     divider: {
@@ -845,7 +845,7 @@ const createStyles = (ui) =>
     totalValue: {
       fontSize: 18,
       fontWeight: "800",
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.priceColor || "#E50914",
     },
 
     /* ================= CONTINUE BUTTON ================= */
@@ -899,7 +899,7 @@ const createStyles = (ui) =>
       fontWeight: "700",
     },
     price: {
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.priceColor || "#E50914",
       fontWeight: "800",
     },
     qtyRow: {
@@ -908,7 +908,7 @@ const createStyles = (ui) =>
       marginTop: 8,
     },
     qtyBtn: {
-      backgroundColor: ui?.primaryColor || "#E50914",
+      backgroundColor: ui?.qtyButtonColor || "#E50914",
       width: 30,
       height: 30,
       borderRadius: 8,
@@ -916,7 +916,7 @@ const createStyles = (ui) =>
       justifyContent: "center",
     },
     qtyBtnText: {
-      color: "#fff",
+      color: ui?.qtyButtonTextColor || "#fff",
       fontWeight: "800",
     },
     qtyValue: {
@@ -938,7 +938,7 @@ const createStyles = (ui) =>
       borderColor: "rgba(0,0,0,0.2)"
     },
     addressTitle: {
-      color: ui?.primaryColor || "#E50914",
+      color: ui?.cardTextColor || "#E50914",
       fontWeight: "800",
     },
     addressText: {
@@ -988,7 +988,7 @@ const createStyles = (ui) =>
       backgroundColor: ui?.cardBgColor || "#2A2A2A",
       marginBottom: 10,
       borderWidth: .5,
-      borderColor: ui?.primaryColor || "#E50914",
+      borderColor: "rgba(0,0,0,0.5)",
     },
     optionText: {
       color: ui?.cardTextColor || "#fff",
