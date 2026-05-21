@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import useSessionStore from "../store/useSessionStore";
 
 export default function GreetingComponent({
   greetingConfig = {},
@@ -36,6 +37,10 @@ export default function GreetingComponent({
 
   const textColor = isDark ? "#FFFFFF" : "#000000";
   const subTextColor = isDark ? "#DDDDDD" : "#555555";
+  const { user } = useSessionStore();
+
+  console.log(user?.name,"useruseruser");
+  
 
   const { message, description } = useMemo(() => {
     const hour = new Date().getHours();
@@ -44,7 +49,7 @@ export default function GreetingComponent({
       return {
         message:
           greetingConfig?.morningMessage ||
-          "Good Morning",
+          "Good Morning {user?.name}",
         description:
           greetingConfig?.morningMessageDescription ||
           "",
@@ -54,7 +59,7 @@ export default function GreetingComponent({
     if (hour >= 12 && hour < 17) {
       return {
         message:
-          greetingConfig?.afternoonMessage ||
+          `${greetingConfig?.afternoonMessage} ${user?.name}` ||
           "Good Afternoon",
         description:
           greetingConfig?.afternoonMessageDescription ||
@@ -65,7 +70,7 @@ export default function GreetingComponent({
     if (hour >= 17 && hour < 21) {
       return {
         message:
-          greetingConfig?.eveningMessage ||
+          `${greetingConfig?.eveningMessage} ${user?.name}` ||
           "Good Evening",
         description:
           greetingConfig?.eveningMessageDescription ||
@@ -75,7 +80,7 @@ export default function GreetingComponent({
 
     return {
       message:
-        greetingConfig?.nightMessage ||
+        `${greetingConfig?.nightMessage} ${user?.name}` ||
         "Good Night",
       description:
         greetingConfig?.nightMessageDescription ||
