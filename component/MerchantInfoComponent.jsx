@@ -34,7 +34,14 @@ const MerchantInfoComponent = ({ merchant }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[
+    styles.container,
+    {
+      backgroundColor:
+        merchant?.headerBgColor || "#111",
+    },
+  ]}
+  edges={["top"]}>
 
       {/* HEADER */}
 
@@ -56,7 +63,7 @@ const MerchantInfoComponent = ({ merchant }) => {
 
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+      <ScrollView contentContainerStyle={{ padding: 20,backgroundColor:merchant?.backgroundColor || "#0F0F0F" }}>
 
         {/* MERCHANT CARD */}
 
@@ -170,7 +177,7 @@ const createStyles = (ui) =>
     },
 
     header: {
-      backgroundColor: "#000",
+      backgroundColor: ui?.headerBgColor || "#111",
       paddingHorizontal: 18,
       paddingVertical: 18,
       flexDirection: "row",
@@ -179,7 +186,7 @@ const createStyles = (ui) =>
     },
 
     title: {
-      color: ui?.headingColor || "#fff",
+      color:ui?.headingColor || "#fff",
       fontSize: 18,
       fontWeight: "800"
     },
@@ -189,7 +196,7 @@ const createStyles = (ui) =>
       padding: 20,
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: "#2A2A2A",
+      borderColor: "rgba(0,0,0,0.2)",
       marginBottom: 20
     },
 
@@ -197,7 +204,7 @@ const createStyles = (ui) =>
       fontSize: 18,
       fontWeight: "800",
       marginBottom: 12,
-      color: ui?.headingColor || "#fff"
+      color: ui?.cardTextColor || "#E50914"
     },
 
     row: {
@@ -209,12 +216,12 @@ const createStyles = (ui) =>
     text: {
       marginLeft: 8,
       fontSize: 14,
-      color: ui?.subHeadingColor || "#ccc"
+      color: ui?.cardTextColor || "#E50914"
     },
 
     tabs: {
       flexDirection: "row",
-      marginBottom: 12
+      marginBottom: 12,
     },
 
     tab: {
@@ -222,7 +229,8 @@ const createStyles = (ui) =>
       paddingVertical: 12,
       borderBottomWidth: 2,
       borderBottomColor: "transparent",
-      alignItems: "center"
+      alignItems: "center",
+      
     },
 
     activeTab: {
@@ -230,7 +238,7 @@ const createStyles = (ui) =>
     },
 
     tabText: {
-      color: ui?.subHeadingColor || "#888",
+      color: ui?.subHeadingColor || "#E50914",
       fontSize: 14
     },
 
@@ -242,13 +250,15 @@ const createStyles = (ui) =>
     contentCard: {
       backgroundColor: ui?.cardBackgroundColor || "#1C1C1C",
       padding: 18,
-      borderRadius: 16
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)",
     },
 
     description: {
       fontSize: 14,
       lineHeight: 22,
-      color: ui?.subHeadingColor || "#ccc"
+      color: ui?.cardTextColor || "#E50914"
     }
 
   });

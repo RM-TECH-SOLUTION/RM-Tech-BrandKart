@@ -66,7 +66,14 @@ const SavedAddressComponent = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[
+    styles.container,
+    {
+      backgroundColor:
+        uiConfig?.headerBgColor || "#111",
+    },
+  ]}
+  edges={["top"]}>
       <StatusBar
         backgroundColor={uiConfig?.headerBgColor || "#111"}
         barStyle="light-content"
@@ -86,7 +93,7 @@ const SavedAddressComponent = () => {
 
         <View style={{ width: 26 }} />
       </View>
-
+      <View style={{ flex: 1 ,backgroundColor: uiConfig?.pageBgColor || "#0F0F0F" }}>
       {/* ADDRESS CONTENT */}
       <View style={styles.content}>
         {address ? (
@@ -95,7 +102,7 @@ const SavedAddressComponent = () => {
               <Ionicons
                 name="location"
                 size={20}
-                color={uiConfig?.primaryColor || "#E50914"}
+                color={uiConfig?.cardTextColor  || "#E50914"}
               />
               <Text style={styles.cardTitle}>Saved Address</Text>
             </View>
@@ -128,6 +135,7 @@ const SavedAddressComponent = () => {
           getProfile={getProfile}
           uiConfig={uiConfig}
         />
+      </View>
       </View>
     </SafeAreaView>
   );
@@ -163,11 +171,12 @@ const createStyles = (ui) =>
     },
 
     content: {
-      padding: 20
+      padding: 20,
+
     },
 
     card: {
-      backgroundColor: ui?.cardBgColor || "#1C1C1C",
+      backgroundColor: ui?.cardBgColor || ui?.cardBgColor || "#fff",
       padding: 20,
       borderRadius: 20,
       borderWidth: 1,
@@ -184,7 +193,7 @@ const createStyles = (ui) =>
       fontSize: 14,
       fontWeight: "700",
       marginLeft: 6,
-      color: ui?.cardTitleColor || "#E50914"
+      color: ui?.cardTextColor || "#E50914"
     },
 
     name: {

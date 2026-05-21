@@ -18,7 +18,7 @@ import * as Location from "expo-location";
 const AddAddressComponent = ({
   onSave,
   uiConfig = {},
-  getProfile
+  getProfile,
 }) => {
 
   const styles = createStyles(uiConfig);
@@ -137,7 +137,7 @@ const AddAddressComponent = ({
         onPress={() => setShowModal(true)}
       >
         <Text style={styles.addText}>
-          {uiConfig?.addAddressText || "+ Add Delivery Address"}
+          {uiConfig?.addAddressText || "+ Add Delivery Address lll"}
         </Text>
       </TouchableOpacity>
 
