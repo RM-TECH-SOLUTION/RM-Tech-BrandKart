@@ -130,7 +130,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
 
           <View>
 
-            <Text style={[styles.name,{color:titleColor}]}>
+            <Text style={[styles.name,{color:titleColor,width:"50%"}]}>
               {name}
             </Text>
 
@@ -199,9 +199,15 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
         <View style={{ width: 26 }} />
 
       </View>
+     
 
       {/* LIST */}
     <View style={{ flex: 1, backgroundColor: backgroundColor }}>
+       {orderHistoryResponse?.length == 0 && (
+      <View style={styles.emptyContainer}>
+        <Text style={[styles.emptyText,{color:uiConfigs?.cardTextTitleColor}]}>No orders found</Text>
+      </View>
+      ) }
       <FlatList
         data={orderHistoryResponse}
         keyExtractor={(item) => item.order_id}
@@ -222,6 +228,15 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center", 
+    alignItems: "center"
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#aaa"
   },
 
   header: {

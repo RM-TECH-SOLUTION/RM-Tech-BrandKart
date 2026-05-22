@@ -446,7 +446,7 @@ const createOrder = async (orderType) => {
                 setSelectedAddress(data);
                 saveUserAddress && saveUserAddress(data);
                 getProfile && getProfile();
-                Alert.alert("Address Saved");
+                // Alert.alert("Address Saved");
               }}
               getProfile={getProfile}
               uiConfig={addressUiConfig}

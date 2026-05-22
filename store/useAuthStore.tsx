@@ -35,7 +35,7 @@ const useAuthStore = create((set) => ({
       // console.log("LOGIN RESULT 👉", result);
 
       if (result?.success) {
-        Alert.alert("Success", result.message || "Login successful!");
+        // Alert.alert("Success", result.message || "Login successful!");
 
         const session = useSessionStore.getState();
         session.setUser(result.user);
@@ -97,7 +97,7 @@ const useAuthStore = create((set) => ({
 
       if (result?.success) {
 
-        Alert.alert("Success", "Registered successfully!");
+        // Alert.alert("Success", "Registered successfully!");
 
         const session = useSessionStore.getState();
         session.setUser(result.user);
@@ -140,7 +140,7 @@ const useAuthStore = create((set) => ({
       );
 
       if (result?.success) {
-        Alert.alert("Success", "Address saved successfully");
+        // Alert.alert("Success", "Address saved successfully");
       } else {
         Alert.alert("Error", result?.message || "Failed to save address");
       }
