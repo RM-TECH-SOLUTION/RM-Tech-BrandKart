@@ -1,28 +1,28 @@
 {
   "expo": {
-    "name": "ZZZ Mobiles",
-    "slug": "zzzmobiles",
+    "name": "Prototype App",
+    "slug": "prototype-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/zzzicon.png",
+    "icon": "./assets/prototype_logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/zzzmobiles.png",
+      "image": "./assets/prototype_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zzzmobiles.app",
+      "bundleIdentifier": "com.rmtechsolution.prototypeapp",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.zzzmobiles.app",
+      "package": "com.rmtechsolution.prototypeapp",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/prototype_logo.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -41,7 +41,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "a4c02810-d1a4-47d3-9f37-c9cc4e58cfed"
+        "projectId": "eaa2e69a-390e-40a4-a107-2718d48a50fe"
       }
     },
     "owner": "rm-tech-solution",
@@ -49,12 +49,12 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/a4c02810-d1a4-47d3-9f37-c9cc4e58cfed",
+      "url": "https://u.expo.dev/eaa2e69a-390e-40a4-a107-2718d48a50fe",
       "enabled": true,
       "checkAutomatically": "ON_LOAD"
     },
     "notification": {
-      "icon": "./assets/zzzicon.png",
+      "icon": "./assets/prototype_logo.png",
       "color": "#ffffff"
     },
     "rmtech": {
