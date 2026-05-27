@@ -46,7 +46,6 @@ const orderingStore = create((set, get) => ({
         });
       }
     } catch (err) {
-      console.log("getCatalogModels error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -81,7 +80,6 @@ getLoyaltySettings: async () => {
 
   } catch (err) {
 
-    console.log("getLoyaltySettings error", err);
 
     set({ errorMessage: err.message });
 
@@ -125,7 +123,6 @@ apply_coupon: async (coupon_code, amount) => {
 
   } catch (err) {
 
-    console.log("apply_coupon error", err);
 
     set({
       errorMessage: err.message
@@ -170,7 +167,6 @@ apply_coupon: async (coupon_code, amount) => {
         });
       }
     } catch (err) {
-      console.log("getCatalogItems error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -199,7 +195,6 @@ apply_coupon: async (coupon_code, amount) => {
         });
       }
     } catch (err) {
-      console.log("getCart error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -225,7 +220,6 @@ apply_coupon: async (coupon_code, amount) => {
         });
       }
     } catch (err) {
-      console.log("merchantData error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -248,7 +242,6 @@ apply_coupon: async (coupon_code, amount) => {
         });
       }
     } catch (err) {
-      console.log("mainCatalogues error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -301,7 +294,7 @@ addToCart: async ({
     }
 
   } catch (err) {
-    console.log("addToCart error", err);
+
     set({ errorMessage: err.message });
   } finally {
     set({ loading: false });
@@ -328,7 +321,6 @@ addToCart: async ({
         set({ errorMessage: res?.message || "Update failed" });
       }
     } catch (err) {
-      console.log("updateQty error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -357,7 +349,6 @@ addToCart: async ({
         set({ errorMessage: res?.message || "Delete failed" });
       }
     } catch (err) {
-      console.log("deleteCartItem error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -373,7 +364,6 @@ addToCart: async ({
         apiClient.Urls.clearCart
       );
 
-      console.log(" clearCart →", res);
 
       if (res?.success) {
         get().getCart();
@@ -381,7 +371,6 @@ addToCart: async ({
         set({ errorMessage: res?.message || "Delete failed" });
       }
     } catch (err) {
-      console.log("clearCart error", err);
 
       set({ errorMessage: err.message });
     } finally {
@@ -396,8 +385,6 @@ addToCart: async ({
         apiClient.Urls.order_history
       );
 
-      console.log(" order_history →", res);
-
       if (res?.success) {
          set({ orderHistoryResponse: res.data || [] });
       } else {
@@ -405,7 +392,6 @@ addToCart: async ({
         return [];
       }
     } catch (err) {
-      console.log("order_history error", err);
 
       set({ errorMessage: err.message });
       return [];

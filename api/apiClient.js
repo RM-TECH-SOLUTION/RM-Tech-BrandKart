@@ -1,5 +1,6 @@
 import expo from "../app.json";
 import useSessionStore from "../store/useSessionStore";
+import useMerchantStore from "../store/useMerchantStore";
 
 /* ================== CONFIG ================== */
 
@@ -8,9 +9,6 @@ const rmtech = expo?.expo?.rmtech || {};
 const BASE_URL = rmtech?.baseUrl?.endsWith("/")
   ? rmtech.baseUrl
   : rmtech.baseUrl + "/";
-
-// Always number
-const merchantId = Number(rmtech?.merchantId || 0);
 
 /* ================== API URLS ================= */
 
@@ -64,7 +62,7 @@ const apiClient = {
 
     // ✅ Always attach merchant_id & user_id
     const finalParams = {
-      merchant_id: merchantId,
+      merchant_id: useMerchantStore.getState().merchantId ?? Number(rmtech?.merchantId || 0),
       user_id: userId,
       ...params,
     };
@@ -78,12 +76,7 @@ const apiClient = {
 
     const reqUrl = url + queryString;
 
-    // console.log(reqUrl,"reqUrl");
-    
-
     try {
-      // console.log(`🚀 [${method}] Request → ${reqUrl}`);
-      // console.log("🧾 PARAMS:", finalParams);
 
       const response = await fetch(reqUrl, {
         method,
@@ -99,15 +92,14 @@ const apiClient = {
       try {
         data = JSON.parse(text);
       } catch (err) {
-        console.error("❌ Server returned non-JSON:\n", text);
+
         throw new Error("Invalid JSON response");
       }
 
-      // console.log("📡 Response →", data);
       return data;
 
     } catch (error) {
-      console.error(`🔥 API Error (${url}):`, error);
+
       throw error;
     }
   },

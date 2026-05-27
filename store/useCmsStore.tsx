@@ -21,7 +21,6 @@ const useCmsStore = create((set) => ({
       });
 
     } catch (error) {
-      console.log("❌ CMS ERROR:", error);
 
       set({
         error: error.message,

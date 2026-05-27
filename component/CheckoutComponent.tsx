@@ -54,8 +54,6 @@ const CheckoutComponent = ({
   const enableCOD = uiConfig?.enableCOD;
   const enableOnline = uiConfig?.enableOnline;
 
-  // console.log(uiConfig, "uiConfighhhhhh");
-
 
   /* ================= LOAD PROFILE ================= */
 
@@ -70,10 +68,6 @@ const CheckoutComponent = ({
   }, [profile]);
 
   /* ================= TOTAL ================= */
-
-  // console.log(loyaltySettings,"loyaltySettingsjjhjhuohoi");
-  
-
 
   
 
@@ -176,8 +170,6 @@ const CheckoutComponent = ({
 
   }, [subtotal, availablePoints, loyaltySettings]);
 
-  // console.log(maxRedeemablePoints,"maxRedeemablePoints");
-
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setDiscount(0);
@@ -187,7 +179,7 @@ const CheckoutComponent = ({
   /* ================= CREATE ORDER ================= */
 
 const createOrder = async (orderType) => {
-  // console.log(cartItems,"cartItemsv");
+
   try {
     setLoading(true);
 
@@ -214,7 +206,6 @@ const createOrder = async (orderType) => {
 
     const order = await res.json();
 
-    // console.log("ORDER RESPONSE:", order);
 
     if (!order?.success) {
       Alert.alert("Order Error", order?.message || "Order failed");
@@ -260,7 +251,6 @@ const createOrder = async (orderType) => {
     try {
       paymentResponse = await RazorpayCheckout.open(options);
     } catch (err) {
-      console.log("Razorpay error:", err);
 
       if (err?.razorpay_payment_id) {
         paymentResponse = err;
@@ -324,7 +314,6 @@ const createOrder = async (orderType) => {
     }
 
   } catch (e) {
-    console.log("ORDER ERROR:", e);
     Alert.alert("Error", e?.message || "Something went wrong");
   } finally {
     setLoading(false);
@@ -339,8 +328,6 @@ const createOrder = async (orderType) => {
       ? item.images[0]
       : item.images;
 
-      // console.log(item,"itemitemitemjjjbkjkg");
-      
 
     return (
       <>

@@ -50,7 +50,7 @@ const useAuthStore = create((set) => ({
         return { success: false, message: result?.message || "Invalid credentials" };
       }
     } catch (error) {
-      console.log("LOGIN ERROR 👉", error.message);
+
       const message = error?.message || "Something went wrong";
       set({ success: false, errorMessage: message });
       return { success: false, message };
@@ -116,8 +116,6 @@ const useAuthStore = create((set) => ({
 
     } catch (error) {
 
-      console.log("REGISTER ERROR 👉", error.message);
-
       const message = error?.message || "Something went wrong";
       set({ success: false, errorMessage: message });
       return { success: false, message };
@@ -147,7 +145,7 @@ const useAuthStore = create((set) => ({
 
       return result;
     } catch (error) {
-      console.log("SAVE ADDRESS ERROR 👉", error.message);
+
       Alert.alert("Error", "Network error: " + error.message);
     } finally {
       set({ loading: false });
@@ -172,7 +170,7 @@ const useAuthStore = create((set) => ({
       }
       return result;
     } catch (error) {
-      console.log("SAVE ADDRESS ERROR 👉", error.message);
+
     } finally {
       set({ loading: false });
     }

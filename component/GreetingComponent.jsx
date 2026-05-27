@@ -39,8 +39,6 @@ export default function GreetingComponent({
   const subTextColor = isDark ? "#DDDDDD" : "#555555";
   const { user } = useSessionStore();
 
-  console.log(user?.name,"useruseruser");
-  
 
   const { message, description } = useMemo(() => {
     const hour = new Date().getHours();

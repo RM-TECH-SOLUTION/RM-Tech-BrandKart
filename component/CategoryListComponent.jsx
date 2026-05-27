@@ -632,9 +632,7 @@ const CategoryListComponent = ({
                       </View>
                       <Text style={{ color: uiConfig?.qtyBgColor || "#fff" }}>Stock-{selectedVariant?.stock || selectedProduct?.stock}</Text>
 
-                      {/* VARIANTS */}
-                      {/* {console.log(selectedProduct.variants, "selectedProduct.variants")} */}
-
+  
                       {selectedProduct.variants?.length > 0 && (
 
                         <View style={{ marginTop: 16 }}>
@@ -656,8 +654,7 @@ const CategoryListComponent = ({
 
                               const isStock = item.stock > 0;
                               const active = selectedVariant?.id === item.id;
-                              // console.log(item, "itemitemhghjgjh");
-
+   
 
                               return (
                                 <>

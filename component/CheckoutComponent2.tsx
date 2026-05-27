@@ -23,8 +23,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 const CheckoutComponent = ({ route,cartResponse }) => {
   const navigation = useNavigation<Nav>();
 
-  // console.log(cartResponse,"cartResponsehhhhhh");
-  
+
 
   // 🛒 Mock cart or passed data
   const initialCart =

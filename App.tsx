@@ -13,6 +13,7 @@ import CheckoutContainer from './container/CheckoutContainer'
 import SavedAddressComponent from './component/SavedAddressComponent'
 import OrderHistoryContainer from './container/OrderHistoryContainer';
 import MerchantInfoContainer from './container/MerchantInfoContainer';
+import MerchantSetupScreen from './component/MerchantSetupScreen';
 
 const Stack = createStackNavigator();
 const appTheme = {
@@ -28,7 +29,7 @@ export default function App() {
     <NavigationContainer theme={appTheme}>
       <StatusBar style="light" backgroundColor="#111" />
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="MerchantSetup"
         detachInactiveScreens={false}
         screenOptions={{
           headerShown: false,
@@ -36,6 +37,7 @@ export default function App() {
           cardOverlayEnabled: false
         }}
       >
+        <Stack.Screen name="MerchantSetup" component={MerchantSetupScreen} />
         <Stack.Screen name="Splash" component={SplashContainer} />
         <Stack.Screen name="Walkthrough" component={WalkthroughContainer} />
         <Stack.Screen name="Auth" component={LoginContainer} />
