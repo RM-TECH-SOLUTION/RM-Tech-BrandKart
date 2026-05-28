@@ -15,10 +15,12 @@ import { useNavigation } from "@react-navigation/native";
 
 /* ORDER FLOW */
 
-const steps = ["pending", "accepted", "shipped", "delivered"];
+const normalSteps = ["pending", "accepted", "shipped", "delivered"];
+const rejectedSteps = ["pending", "rejected", "accepted", "shipped", "delivered"];
 
 const stepLabels = {
   pending: "Order",
+  rejected: "Rejected",
   accepted: "Accepted",
   shipped: "Shipped",
   delivered: "Delivered"
@@ -44,6 +46,8 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
 
   const renderProgress = (status) => {
 
+    const isRejected = status?.toLowerCase() === "rejected";
+    const steps = isRejected ? rejectedSteps : normalSteps;
     const currentStep = steps.indexOf(status?.toLowerCase());
 
     return (
@@ -52,6 +56,17 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
         {steps.map((step, index) => {
 
           const active = index <= currentStep;
+          const isRejectedStep = step === "rejected";
+          const stepFillColor = active && isRejectedStep
+            ? "#E53935"
+            : active
+              ? progressBarFillColor
+              : progressBarColor;
+          const stepLabelColor = active && isRejectedStep
+            ? "#E53935"
+            : active
+              ? progressBarFillColor
+              : subTitleColor;
 
           return (
             <View key={index} style={styles.step}>
@@ -59,7 +74,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
               <View
                 style={[
                   styles.circle,
-                  { backgroundColor: active ? progressBarFillColor : progressBarColor }
+                  { backgroundColor: stepFillColor }
                 ]}
               />
 
@@ -69,9 +84,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
                     styles.line,
                     {
                       backgroundColor:
-                        index < currentStep
-                          ? progressBarFillColor
-                          : progressBarColor
+                        index < currentStep ? stepFillColor : progressBarColor
                     }
                   ]}
                 />
@@ -80,7 +93,7 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
               <Text
                 style={[
                   styles.stepLabel,
-                  { color: active ? progressBarFillColor : subTitleColor }
+                  { color: stepLabelColor }
                 ]}
               >
                 {stepLabels[step]}
