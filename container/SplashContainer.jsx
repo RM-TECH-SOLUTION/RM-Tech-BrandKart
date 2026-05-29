@@ -6,6 +6,9 @@ import splashScreenImage from "../assets/bgHome1.png";
 import logoImage from "../assets/AR-Fashion.png";
 import useCmsStore from "../store/useCmsStore";
 import useSessionStore from "../store/useSessionStore";
+import useMerchantStore from "../store/useMerchantStore";
+
+const FIND_MERCHANT_URL = "https://api.rmtechsolution.com/findMerchant.php";
 
 const SplashContainer = ({ navigation }) => {
   const template = 1;
@@ -17,6 +20,7 @@ const SplashContainer = ({ navigation }) => {
 
   const { getCmsData, cmsData } = useCmsStore();
   const { user } = useSessionStore();
+  const { merchantName, setMerchantVerification } = useMerchantStore();
 
   const [splashCmsData, setSplashCmsData] = useState(null);
   const [isReady, setIsReady] = useState(false);
@@ -52,6 +56,8 @@ const SplashContainer = ({ navigation }) => {
   useEffect(() => {
     if (!isReady) return;
 
+    let isMounted = true;
+
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
@@ -79,16 +85,59 @@ const SplashContainer = ({ navigation }) => {
       ]).start();
     }
 
-    const timeout = setTimeout(() => {
-      if (user) {
+    const timeout = setTimeout(async () => {
+      if (!user) {
+        if (isMounted) {
+          setMerchantVerification("unknown", null);
+          navigation.replace("Walkthrough");
+        }
+        return;
+      }
+
+      const trimmed = merchantName?.trim();
+      if (!trimmed) {
+        if (isMounted) {
+          setMerchantVerification("active", null);
+          navigation.replace("Home");
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${FIND_MERCHANT_URL}?name=${encodeURIComponent(trimmed)}`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          }
+        );
+
+        const data = await response.json();
+        const status = data?.data?.status;
+
+        if (!isMounted) return;
+
+        if (data?.success && status === "active") {
+          setMerchantVerification("active", null);
+        } else {
+          setMerchantVerification("inactive", data?.data?.name || trimmed);
+        }
+      } catch {
+        if (!isMounted) return;
+        // Keep app usable if verification fails due to temporary network issues.
+        setMerchantVerification("active", null);
+      }
+
+      if (isMounted) {
         navigation.replace("Home");
-      } else {
-        navigation.replace("Walkthrough");
       }
     }, splashCmsData?.autoNavigationTimeout || 3000);
 
-    return () => clearTimeout(timeout);
-  }, [isReady]);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+  }, [isReady, merchantName, navigation, setMerchantVerification, splashCmsData, user]);
 
   /* ---------------- WAIT UNTIL CMS READY ---------------- */
   if (!isReady) {

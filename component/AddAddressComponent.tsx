@@ -19,6 +19,10 @@ const AddAddressComponent = ({
   onSave,
   uiConfig = {},
   getProfile,
+}: {
+  onSave?: (data: any) => void;
+  uiConfig?: any;
+  getProfile?: () => void;
 }) => {
 
   const styles = createStyles(uiConfig);
@@ -147,13 +151,15 @@ const AddAddressComponent = ({
         animationType="slide"
         transparent
       >
-        <View style={styles.overlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={styles.overlay}>
             <View style={styles.modalContainer}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
               >
 
                 {/* HEADER */}
@@ -230,8 +236,8 @@ const AddAddressComponent = ({
 
               </ScrollView>
             </View>
-          </KeyboardAvoidingView>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
     </View>

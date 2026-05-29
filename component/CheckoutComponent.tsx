@@ -47,6 +47,7 @@ const CheckoutComponent = ({
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [discount, setDiscount] = useState(0);
+  const [showAddressWarning, setShowAddressWarning] = useState(false);
   const styles = createStyles(uiConfig);
 
   const [pointsInput, setPointsInput] = useState("");
@@ -431,7 +432,6 @@ const CheckoutComponent = ({
                   setSelectedAddress(data);
                   saveUserAddress && saveUserAddress(data);
                   getProfile && getProfile();
-                  // Alert.alert("Address Saved");
                 }}
                 getProfile={getProfile}
                 uiConfig={addressUiConfig}
@@ -445,7 +445,13 @@ const CheckoutComponent = ({
               <TouchableOpacity
                 style={styles.payBtn}
                 disabled={loading}
-                onPress={() => setShowPaymentModal(true)}
+                onPress={() => {
+                  if (!selectedAddress) {
+                    setShowAddressWarning(true);
+                    return;
+                  }
+                  setShowPaymentModal(true);
+                }}
               >
                 <Text style={styles.payText}>
                   {loading ? "Processing..." : `Pay ₹${total}`}
@@ -680,6 +686,42 @@ const CheckoutComponent = ({
             </View>
           </View>
         </Modal>
+        {/* ADDRESS WARNING MODAL */}
+        <Modal visible={showAddressWarning} transparent animationType="fade">
+          <View style={styles.addressWarningOverlay}>
+            <View style={[
+              styles.addressWarningSheet,
+              addressUiConfig?.modalBgColor ? { backgroundColor: addressUiConfig.modalBgColor } : null
+            ]}>
+              <View style={[
+                styles.addressWarningIconWrap,
+                addressUiConfig?.primaryColor ? { borderColor: addressUiConfig.primaryColor + "44", backgroundColor: addressUiConfig.primaryColor + "22" } : null
+              ]}>
+                <Ionicons name="location-outline" size={32} color={addressUiConfig?.primaryColor || "#f0a500"} />
+              </View>
+              <Text style={[styles.addressWarningTitle, addressUiConfig?.headingColor ? { color: addressUiConfig.headingColor } : null]}>
+                Delivery Address Required
+              </Text>
+              <Text style={[styles.addressWarningSubtitle, addressUiConfig?.headerTextColor ? { color: addressUiConfig.headerTextColor } : null]}>
+                Please add a delivery address before proceeding to payment.
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.addressWarningBtn,
+                  addressUiConfig?.buttonBgColor ? { backgroundColor: addressUiConfig.buttonBgColor }
+                    : addressUiConfig?.primaryColor ? { backgroundColor: addressUiConfig.primaryColor } : null
+                ]}
+                onPress={() => setShowAddressWarning(false)}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.addressWarningBtnText, addressUiConfig?.buttonTextColor ? { color: addressUiConfig.buttonTextColor } : null]}>
+                  OK, Got It
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <OrderSuccessComponent
           visible={successModal.visible}
           orderType={successModal.orderType}
@@ -863,6 +905,62 @@ const createStyles = (ui) =>
       fontSize: 16,
       fontWeight: "700",
     },
+
+    addressWarningOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 28,
+    },
+    addressWarningSheet: {
+      backgroundColor: ui?.modalBgColor || "#1c1c1e",
+      width: "100%",
+      borderRadius: 20,
+      padding: 28,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: "#333",
+    },
+    addressWarningIconWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: "#2a2200",
+      borderWidth: 1,
+      borderColor: "#f0a50044",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    addressWarningTitle: {
+      color: "#fff",
+      fontSize: 18,
+      fontWeight: "700",
+      textAlign: "center",
+      marginBottom: 10,
+    },
+    addressWarningSubtitle: {
+      color: "#aaa",
+      fontSize: 13,
+      textAlign: "center",
+      lineHeight: 20,
+      marginBottom: 22,
+    },
+    addressWarningBtn: {
+      backgroundColor: ui?.primaryColor || "#f0a500",
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 36,
+      alignSelf: "stretch",
+      alignItems: "center",
+    },
+    addressWarningBtnText: {
+      color: "#111",
+      fontWeight: "700",
+      fontSize: 15,
+    },
+
     // 
 
     container: {
