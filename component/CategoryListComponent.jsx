@@ -7,8 +7,7 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
-  Image,
-  Alert
+  Image
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import useSessionStore from "../store/useSessionStore";
@@ -46,6 +45,7 @@ const CategoryListComponent = ({
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMainCatalogue, setSelectedMainCatalogue] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [authModalVisible, setAuthModalVisible] = useState(false);
 
   const isLoggedIn = useSessionStore((state) => state.isLoggedIn);
 
@@ -53,20 +53,7 @@ const CategoryListComponent = ({
   const requireAuthBeforeAction = () => {
     if (isLoggedIn) return true;
 
-    Alert.alert(
-      "Login Required",
-      "Please sign in or register to add items to your cart.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Login",
-          onPress: () => navigation.navigate("Auth"),
-        },
-      ]
-    );
+    setAuthModalVisible(true);
 
     return false;
   };
@@ -500,6 +487,43 @@ const CategoryListComponent = ({
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={authModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAuthModalVisible(false)}
+      >
+        <View style={dynamicStyles.authOverlay}>
+          <View style={dynamicStyles.authModalCard}>
+            <Text style={dynamicStyles.authModalTitle}>Login Required</Text>
+            <Text style={dynamicStyles.authModalMessage}>
+              Please sign in or register to add items to your cart.
+            </Text>
+
+            <View style={dynamicStyles.authActionRow}>
+              <TouchableOpacity
+                style={dynamicStyles.authCancelBtn}
+                onPress={() => setAuthModalVisible(false)}
+              >
+                <Text style={dynamicStyles.authCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={dynamicStyles.authLoginBtn}
+                onPress={() => {
+                  setPdpVisible(false);
+                  setAuthModalVisible(false);
+                  navigation.navigate("Auth");
+                }}
+              >
+                <Text style={dynamicStyles.authLoginText}>Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Modal visible={pdpVisible} transparent animationType="slide" >
 
 
@@ -632,7 +656,7 @@ const CategoryListComponent = ({
                       </View>
                       <Text style={{ color: uiConfig?.qtyBgColor || "#fff" }}>Stock-{selectedVariant?.stock || selectedProduct?.stock}</Text>
 
-  
+
                       {selectedProduct.variants?.length > 0 && (
 
                         <View style={{ marginTop: 16 }}>
@@ -654,7 +678,7 @@ const CategoryListComponent = ({
 
                               const isStock = item.stock > 0;
                               const active = selectedVariant?.id === item.id;
-   
+
 
                               return (
                                 <>
@@ -1031,6 +1055,73 @@ const styles = (ui, CARD_WIDTH) =>
       fontWeight: "800",
       textAlign: "center",
       marginBottom: 20
+    },
+
+    authOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.55)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 24,
+    },
+
+    authModalCard: {
+      width: "100%",
+      backgroundColor: ui?.modalBgColor || ui?.pageBgColor || "#121212",
+      borderRadius: 20,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.08)",
+    },
+
+    authModalTitle: {
+      fontSize: 20,
+      fontWeight: "800",
+      color: ui?.headerTitleColor || "#fff",
+      marginBottom: 10,
+      textAlign: "center",
+    },
+
+    authModalMessage: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: ui?.cardTextColor || "#d4d4d4",
+      textAlign: "center",
+      marginBottom: 18,
+    },
+
+    authActionRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 10,
+    },
+
+    authCancelBtn: {
+      flex: 1,
+      backgroundColor: "rgba(255,255,255,0.08)",
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 12,
+    },
+
+    authCancelText: {
+      color: ui?.cardTextColor || "#fff",
+      fontWeight: "700",
+    },
+
+    authLoginBtn: {
+      flex: 1,
+      backgroundColor: ui?.buttonColor || "#E50914",
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 12,
+    },
+
+    authLoginText: {
+      color: ui?.buttonTextColor || "#fff",
+      fontWeight: "800",
     }
 
   })
