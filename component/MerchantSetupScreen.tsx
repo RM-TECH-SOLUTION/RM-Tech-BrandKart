@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  Image,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import useMerchantStore from "../store/useMerchantStore";
 
 const FIND_MERCHANT_URL = "https://api.rmtechsolution.com/findMerchant.php";
@@ -23,6 +25,9 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const [error, setError] = useState("");
 
   const { setMerchant } = useMerchantStore();
+
+  const logo = require('../assets/prototype_logo.png');
+  const accentColor = '#f0a500';
 
   const handleSubmit = async () => {
     const trimmed = merchantName.trim();
@@ -65,11 +70,16 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      contentContainerStyle={styles.contentContainer}
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
     >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.card}>
+        <Image source={logo} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>Welcome</Text>
         <Text style={styles.subtitle}>Enter your merchant name to get started</Text>
 
@@ -85,14 +95,14 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
           autoCapitalize="words"
           autoCorrect={false}
           returnKeyType="done"
-          onSubmitEditing={handleSubmit}
+          onSubmitEditing={() => { Keyboard.dismiss(); handleSubmit(); }}
           editable={!loading}
         />
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[styles.button, { backgroundColor: accentColor }, loading && styles.buttonDisabled]}
           onPress={handleSubmit}
           disabled={loading}
           activeOpacity={0.8}
@@ -104,7 +114,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
           )}
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </KeyboardAwareScrollView>
   );
 };
 
@@ -112,9 +123,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#111",
-    justifyContent: "center",
-    alignItems: "center",
     paddingHorizontal: 24,
+  },
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // paddingHorizontal: 24,
   },
   card: {
     width: "100%",
@@ -165,6 +180,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 16,
+    borderRadius: 70,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
   },
   buttonDisabled: {
     opacity: 0.6,
