@@ -57,6 +57,16 @@ const CheckoutComponent = ({
   const enableCOD = uiConfig?.enableCOD;
   const enableOnline = uiConfig?.enableOnline;
 
+  // default select first available payment option: prefer online, else COD
+  useEffect(() => {
+    if (!paymentMethod) {
+      if (enableOnline === true || enableOnline === "true") {
+        setPaymentMethod("online");
+      } else if (enableCOD === true || enableCOD === "true") {
+        setPaymentMethod("COD");
+      }
+    }
+  }, [enableOnline, enableCOD]);
 
   /* ================= LOAD PROFILE ================= */
 

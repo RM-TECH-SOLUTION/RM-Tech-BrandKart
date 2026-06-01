@@ -47,7 +47,7 @@ export default function GreetingComponent({
       return {
         message:
           greetingConfig?.morningMessage ||
-          "Good Morning {user?.name}",
+          "Good Morning {user?.name || 'Guest'}",
         description:
           greetingConfig?.morningMessageDescription ||
           "",
@@ -57,7 +57,7 @@ export default function GreetingComponent({
     if (hour >= 12 && hour < 17) {
       return {
         message:
-          `${greetingConfig?.afternoonMessage} ${user?.name}` ||
+          `${greetingConfig?.afternoonMessage} ${user?.name || "Guest"}` ||
           "Good Afternoon",
         description:
           greetingConfig?.afternoonMessageDescription ||
@@ -68,7 +68,7 @@ export default function GreetingComponent({
     if (hour >= 17 && hour < 21) {
       return {
         message:
-          `${greetingConfig?.eveningMessage} ${user?.name}` ||
+          `${greetingConfig?.eveningMessage} ${user?.name || "Guest"}` ||
           "Good Evening",
         description:
           greetingConfig?.eveningMessageDescription ||
@@ -78,7 +78,7 @@ export default function GreetingComponent({
 
     return {
       message:
-        `${greetingConfig?.nightMessage} ${user?.name}` ||
+        `${greetingConfig?.nightMessage} ${user?.name || "Guest"}` ||
         "Good Night",
       description:
         greetingConfig?.nightMessageDescription ||

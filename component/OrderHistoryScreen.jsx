@@ -141,9 +141,9 @@ const OrderHistoryScreen = ({ orderHistoryResponse = [], uiConfig = {} }) => {
             </Text>
           </View>
 
-          <View>
+<View style={{flex: 1}}>
 
-            <Text style={[styles.name,{color:titleColor,width:"50%"}]}>
+            <Text style={[styles.name,{color:titleColor}]} numberOfLines={3} ellipsizeMode={'tail'}>
               {name}
             </Text>
 
@@ -290,7 +290,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 18,
-    width:"70%"
+    flexShrink: 1,
+    flexWrap: 'wrap'
   },
 
   orderId: {

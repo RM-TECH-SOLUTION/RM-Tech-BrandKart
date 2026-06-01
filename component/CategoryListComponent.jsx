@@ -286,7 +286,7 @@ const CategoryListComponent = ({
             {isOutOfStock ? (
 
               <View style={dynamicStyles.outOfStock}>
-                <Text style={dynamicStyles.outText}>
+                <Text style={[dynamicStyles.outText,{color: uiConfig?.buttonTextColor || "#fff"}]}>
                   OUT OF STOCK
                 </Text>
               </View>
@@ -1047,6 +1047,13 @@ const styles = (ui, CARD_WIDTH) =>
       borderRadius: 24,
       padding: 16,
       maxHeight: "80%"
+    },
+     modalBox2: {
+      width: "100%",
+      backgroundColor: ui?.pageBgColor || "#0F0F0F",
+      borderRadius: 24,
+      padding: 16,
+      maxHeight: "100%"
     },
 
     modalTitle: {
