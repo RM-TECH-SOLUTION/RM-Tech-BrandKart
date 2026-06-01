@@ -9,7 +9,45 @@
       "client_info": {
         "mobilesdk_app_id": "1:453975421966:android:270a3b5529591c84cef85f",
         "android_client_info": {
-          "package_name": "com.zzzmobiles.app"
+          "package_name": "com.rmtechsolution.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDYrL6iGaPoK8FbBMKA8oT_pHucDUY9PM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453975421966:android:2729ca3324cbebf6cef85f",
+        "android_client_info": {
+          "package_name": "com.rmtechsolution.prototypeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDYrL6iGaPoK8FbBMKA8oT_pHucDUY9PM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453975421966:android:259170d11ee88c72cef85f",
+        "android_client_info": {
+          "package_name": "com.rmtechsolution.styleversefashion"
         }
       },
       "oauth_client": [],
