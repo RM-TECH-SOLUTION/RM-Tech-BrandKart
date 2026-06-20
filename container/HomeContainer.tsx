@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -31,9 +32,10 @@ const normalizeCmsFields = (cms: any): any => {
 };
 
 const HomeContainer = () => {
-  const { cmsData, getCmsData } = useCmsStore() as any;
+  const { cmsData, getCmsData, loading } = useCmsStore() as any;
   const { getLoyaltySettings, getCart } = orderingStore() as any;
   const { merchantStatus, inactiveMerchantName } = useMerchantStore();
+  const rmLogo = require("../assets/adaptive-icon-rm.png");
 
   const [uiConfig, setUiConfig] = useState<Record<string, any>>({});
   const [homeBanner, setHomeBanner] = useState<any[]>([]);
@@ -124,6 +126,16 @@ const HomeContainer = () => {
     );
   }
 
+  if (merchantStatus !== "inactive" && (loading || !Array.isArray(cmsData))) {
+    return (
+      <SafeAreaView style={styles.loaderScreen}>
+        <Image source={rmLogo} style={styles.loaderLogo} resizeMode="contain" />
+        <ActivityIndicator size="small" color="#111827" style={styles.loaderSpinner} />
+        <Text style={styles.loaderText}>Preparing your RM Tech app...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <HomeTabs
@@ -196,6 +208,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
     fontSize: 14,
+  },
+  loaderScreen: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  loaderLogo: {
+    width: 120,
+    height: 120,
+    borderRadius: 20,
+  },
+  loaderSpinner: {
+    marginTop: 16,
+  },
+  loaderText: {
+    marginTop: 12,
+    color: "#111827",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

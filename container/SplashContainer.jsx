@@ -1,29 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Animated, ActivityIndicator } from "react-native";
-import SplashScreen from "../component/SplashScreen";
-import SplashScreen2 from "../component/SplashScreen2";
-import splashScreenImage from "../assets/bgHome1.png";
-import logoImage from "../assets/AR-Fashion.png";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator, Image, Text, StyleSheet, Dimensions } from "react-native";
 import useCmsStore from "../store/useCmsStore";
 import useSessionStore from "../store/useSessionStore";
 import useMerchantStore from "../store/useMerchantStore";
 
-const FIND_MERCHANT_URL = "https://api.rmtechsolution.com/findMerchant.php";
+const { width, height } = Dimensions.get("window");
 
 const SplashContainer = ({ navigation }) => {
-  const template = 1;
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const bgScale = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
   const { getCmsData, cmsData } = useCmsStore();
   const { user } = useSessionStore();
   const { merchantName, setMerchantVerification } = useMerchantStore();
 
   const [splashCmsData, setSplashCmsData] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const rmLogo = require("../assets/adaptive-icon-rm.png");
+  const defaultBackground = require("../assets/bgHome1.png");
 
   /* ---------------- FETCH CMS ---------------- */
   useEffect(() => {
@@ -38,7 +29,11 @@ const SplashContainer = ({ navigation }) => {
       (item) => item.modelSlug === "splashConfiguration"
     );
 
-    if (!splashItem?.cms) return;
+    if (!splashItem?.cms) {
+      setSplashCmsData({});
+      setIsReady(true);
+      return;
+    }
 
     const formattedCms = Object.keys(splashItem.cms).reduce(
       (acc, key) => {
@@ -57,33 +52,8 @@ const SplashContainer = ({ navigation }) => {
     if (!isReady) return;
 
     let isMounted = true;
-
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-
-    if (template === 2) {
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 1500,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 4,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bgScale, {
-          toValue: 1.1,
-          duration: 4000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
+    const cmsTimeout = Number(splashCmsData?.autoNavigationTimeout);
+    const navigationDelay = Number.isFinite(cmsTimeout) && cmsTimeout >= 0 ? cmsTimeout : 0;
 
     const timeout = setTimeout(async () => {
       if (!user) {
@@ -103,35 +73,13 @@ const SplashContainer = ({ navigation }) => {
         return;
       }
 
-      try {
-        const response = await fetch(
-          `${FIND_MERCHANT_URL}?name=${encodeURIComponent(trimmed)}`,
-          {
-            method: "GET",
-            headers: { Accept: "application/json" },
-          }
-        );
-
-        const data = await response.json();
-        const status = data?.data?.status;
-
-        if (!isMounted) return;
-
-        if (data?.success && status === "active") {
-          setMerchantVerification("active", null);
-        } else {
-          setMerchantVerification("inactive", data?.data?.name || trimmed);
-        }
-      } catch {
-        if (!isMounted) return;
-        // Keep app usable if verification fails due to temporary network issues.
-        setMerchantVerification("active", null);
-      }
+      if (!isMounted) return;
+      setMerchantVerification("active", null);
 
       if (isMounted) {
         navigation.replace("Home");
       }
-    }, splashCmsData?.autoNavigationTimeout || 3000);
+    }, navigationDelay);
 
     return () => {
       isMounted = false;
@@ -142,47 +90,82 @@ const SplashContainer = ({ navigation }) => {
   /* ---------------- WAIT UNTIL CMS READY ---------------- */
   if (!isReady) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" }}>
-        <ActivityIndicator size="large" color="#fff" />
+      <View style={styles.loaderContainer}>
+        <Image source={rmLogo} style={styles.loaderLogo} resizeMode="contain" />
+        <ActivityIndicator size="small" color="#111827" style={styles.loaderSpinner} />
+        <Text style={styles.loaderText}>Loading RM Tech...</Text>
       </View>
     );
   }
 
-  /* ---------------- ROTATION ---------------- */
-  const rotateInterpolate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-
-  /* ---------------- IMAGE SOURCES ---------------- */
   const backgroundSource = splashCmsData?.backgroundImage
     ? { uri: splashCmsData.backgroundImage }
-    : splashScreenImage;
+    : defaultBackground;
 
   const logoSource = splashCmsData?.logoImage
     ? { uri: splashCmsData.logoImage }
-    : logoImage;
+    : rmLogo;
 
   return (
-    <View style={{ flex: 1 }}>
-      {template === 2 ? (
-        <SplashScreen2
-          fadeAnim={fadeAnim}
-          rotateInterpolate={rotateInterpolate}
-          backgroundImage={backgroundSource}
-          logoImage={logoSource}
-        />
-      ) : (
-        <SplashScreen
-          fadeAnim={fadeAnim}
-          scaleAnim={scaleAnim}
-          bgScale={bgScale}
-          backgroundImage={backgroundSource}
-          logoImage={logoSource}
-        />
-      )}
+    <View style={styles.splashContainer}>
+      <Image source={backgroundSource} style={styles.splashBackground} resizeMode="cover" />
+      <View style={styles.splashOverlay} />
+
+      <View style={styles.splashCenterContent}>
+        <Image source={logoSource} style={styles.splashLogo} resizeMode="contain" />
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  loaderLogo: {
+    width: 118,
+    height: 118,
+    borderRadius: 22,
+  },
+  loaderSpinner: {
+    marginTop: 18,
+  },
+  loaderText: {
+    marginTop: 12,
+    color: "#111827",
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 0.2,
+  },
+  splashContainer: {
+    flex: 1,
+    backgroundColor: "#0b1020",
+  },
+  splashBackground: {
+    width,
+    height,
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  splashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  splashCenterContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  splashLogo: {
+    width: 140,
+    height: 140,
+    borderRadius: 20,
+  },
+});
 
 export default SplashContainer;

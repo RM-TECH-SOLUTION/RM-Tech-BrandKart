@@ -11,12 +11,18 @@ const useCmsStore = create((set) => ({
       set({ loading: true, error: null });
 
       // 🔥 Uses apiClient (merchant_id auto attached)
-      const data = await apiClient.get(apiClient.Urls.getCmsByMerchant);
+      const response = await apiClient.get(apiClient.Urls.getCmsByMerchant);
+
+      const normalizedCms = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
 
       // console.log("✅ CMS DATA:", data);
 
       set({
-        cmsData: data,
+        cmsData: normalizedCms,
         loading: false,
       });
 

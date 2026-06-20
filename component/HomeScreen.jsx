@@ -13,12 +13,12 @@ import {
   Platform,
   Alert,
   Linking,
+  NativeModules,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome } from "@expo/vector-icons";
 import GreetingComponent from "./GreetingComponent";
-import messaging from "@react-native-firebase/messaging";
 import useSessionStore from "../store/useSessionStore";
 import orderingStore from "../store/orderingStore";
 
@@ -55,6 +55,25 @@ const resolveNavigationTarget = (target) => {
     REDIRECT_ROUTE_MAP[normalizedKey] ||
     normalizedTarget
   );
+};
+
+const getMessagingInstance = () => {
+  try {
+    // Expo Go does not bundle RN Firebase native modules.
+    if (!NativeModules?.RNFBAppModule) {
+      return null;
+    }
+
+    const messagingFactory = require("@react-native-firebase/messaging")?.default;
+
+    if (typeof messagingFactory !== "function") {
+      return null;
+    }
+
+    return messagingFactory();
+  } catch (error) {
+    return null;
+  }
 };
 
 export default function HomeScreen({
@@ -101,13 +120,19 @@ export default function HomeScreen({
   /* ================= PERMISSION ================= */
   useEffect(() => {
     const requestPermission = async () => {
+      const messaging = getMessagingInstance();
+
+      if (!messaging) {
+        return;
+      }
+
       if (Platform.OS === "android" && Platform.Version >= 33) {
         await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
         );
       }
 
-      await messaging().requestPermission();
+      await messaging.requestPermission();
     };
 
     requestPermission();
@@ -116,7 +141,13 @@ export default function HomeScreen({
   /* ================= REGISTER FCM ================= */
   const registerFCM = async (userId) => {
     try {
-      const token = await messaging().getToken();
+      const messaging = getMessagingInstance();
+
+      if (!messaging) {
+        return;
+      }
+
+      const token = await messaging.getToken();
   
       await fetch("https://api.rmtechsolution.com/saveToken.php", {
         method: "POST",
@@ -142,7 +173,13 @@ export default function HomeScreen({
 
   /* ================= TOKEN REFRESH ================= */
   useEffect(() => {
-    const unsubscribe = messaging().onTokenRefresh((token) => {
+    const messaging = getMessagingInstance();
+
+    if (!messaging) {
+      return;
+    }
+
+    const unsubscribe = messaging.onTokenRefresh((token) => {
 
       fetch("https://api.rmtechsolution.com/saveToken.php", {
         method: "POST",
@@ -161,7 +198,13 @@ export default function HomeScreen({
 
   /* ================= FOREGROUND ================= */
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+    const messaging = getMessagingInstance();
+
+    if (!messaging) {
+      return;
+    }
+
+    const unsubscribe = messaging.onMessage(async (remoteMessage) => {
 
       Alert.alert(
         remoteMessage?.notification?.title || "Notification",
@@ -174,8 +217,14 @@ export default function HomeScreen({
 
   /* ================= CLICK HANDLING ================= */
   useEffect(() => {
+    const messaging = getMessagingInstance();
+
+    if (!messaging) {
+      return;
+    }
+
     // Background click
-    const unsubscribe = messaging().onNotificationOpenedApp(
+    const unsubscribe = messaging.onNotificationOpenedApp(
       (remoteMessage) => {
   
         navigation.navigate("Home"); // change if needed
@@ -183,7 +232,7 @@ export default function HomeScreen({
     );
 
     // App opened from quit
-    messaging()
+    messaging
       .getInitialNotification()
       .then((remoteMessage) => {
         if (remoteMessage) {
