@@ -1,5 +1,5 @@
 {
-  "name": "pp-app",
+  "name": "rm-tech-brandkart",
   "license": "0BSD",
   "version": "1.0.0",
   "main": "index.ts",
@@ -24,6 +24,7 @@
     "expo-font": "~14.0.11",
     "expo-linear-gradient": "^15.0.7",
     "expo-location": "~19.0.8",
+    "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.8",
     "expo-updates": "~29.0.17",
     "lottie-react-native": "^7.3.4",
