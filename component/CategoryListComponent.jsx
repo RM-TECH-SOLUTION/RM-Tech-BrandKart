@@ -7,9 +7,11 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
-  Image
+  Image,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import useSessionStore from "../store/useSessionStore";
 
 const { width } = Dimensions.get("window");
@@ -67,11 +69,14 @@ const CategoryListComponent = ({
   // 
 
   const gridColumns = uiConfig?.gridColumns || 2;
+  const gridGap = Number(uiConfig?.gridGap || 8);
+  const gridHorizontalPadding = Number(uiConfig?.gridHorizontalPadding || 16);
+  const modalGridGap = Number(uiConfig?.modalGridGap || gridGap);
 
   const CARD_WIDTH =
-    (width - 42 - (gridColumns - 1) * 20) / gridColumns;
+    (width - gridHorizontalPadding * 2 - (gridColumns - 1) * gridGap) / gridColumns;
 
-  const dynamicStyles = styles(uiConfig, CARD_WIDTH);
+  const dynamicStyles = styles(uiConfig, CARD_WIDTH, gridColumns);
   const pdpQty = cartMap[
     selectedVariant?.id
       ? `${selectedProduct?.id}_${selectedVariant?.id}`
@@ -133,14 +138,35 @@ const CategoryListComponent = ({
   const renderCategoryCard = (item) => (
 
     <TouchableOpacity
-      style={dynamicStyles.card}
+      style={[
+        dynamicStyles.card,
+        dynamicStyles.modalCard,
+        { padding: 0 }
+      ]}
       onPress={() => handleSelectCategoryLocal(item)}
     >
 
-      {getImageUri(item) && (
+      {getImageUri(item) ? (
         <Image
           source={{ uri: getImageUri(item) }}
-          style={[dynamicStyles.image, { backgroundColor: "#fff" }]}
+          style={[
+            dynamicStyles.image,
+            {
+              backgroundColor: uiConfig?.imageBgColor || "#F9F9F9",
+              marginBottom: 0,
+            },
+          ]}
+        />
+      ) : (
+        <Image
+          source={require("../assets/adaptive-icon-rm.png")}
+          style={[
+            dynamicStyles.image,
+            {
+              backgroundColor: uiConfig?.imageBgColor || "#F9F9F9",
+              marginBottom: 0,
+            },
+          ]}
         />
       )}
 
@@ -157,14 +183,35 @@ const CategoryListComponent = ({
   const renderMainCatalogCard = (item) => (
 
     <TouchableOpacity
-      style={dynamicStyles.card}
+      style={[
+        dynamicStyles.card,
+        dynamicStyles.modalCard,
+        { padding: 0 }
+      ]}
       onPress={() => setSelectedMainCatalogue(item)}
     >
 
-      {item.image && (
+      {item.image ? (
         <Image
           source={{ uri: item.image }}
-          style={[dynamicStyles.image, { backgroundColor: "#fff" }]}
+          style={[
+            dynamicStyles.image,
+            {
+              backgroundColor: uiConfig?.imageBgColor || "#F9F9F9",
+              marginBottom: 0,
+            },
+          ]}
+        />
+      ) : (
+        <Image
+          source={require("../assets/adaptive-icon-rm.png")}
+          style={[
+            dynamicStyles.image,
+            {
+              backgroundColor: uiConfig?.imageBgColor || "#F9F9F9",
+              marginBottom: 0,
+            },
+          ]}
         />
       )}
 
@@ -221,7 +268,7 @@ const CategoryListComponent = ({
 
       <View style={dynamicStyles.card}>
 
-        {getImageUri(item) && (
+        {getImageUri(item) ? (
 
           <TouchableOpacity
             onPress={() => {
@@ -239,8 +286,25 @@ const CategoryListComponent = ({
 
           </TouchableOpacity>
 
+        ) : (
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedProduct(item);
+              const lastVariant = getVariantInCart(item);
+              setSelectedVariant(lastVariant || item.variants[0]);
+              setPdpVisible(true);
+            }}
+            style={dynamicStyles.image}
+          >
+            <Image
+              source={require("../assets/adaptive-icon-rm.png")}
+              style={{ width: 80, height: 80 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         )}
-        <View style={{ flex: 1, justifyContent: "space-between" }}>
+
+        <View style={{ flex: 1, justifyContent: "space-between", paddingHorizontal: 10, paddingBottom: 10 }}>
 
           <TouchableOpacity
             onPress={() => {
@@ -254,39 +318,54 @@ const CategoryListComponent = ({
               {item.name}
             </Text>
 
-            {item.stock && (
-              <Text style={dynamicStyles.cardText}>
-                Stock-{item.stock}
+            {item.stock && !isOutOfStock && (
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: uiConfig?.mutedTextColor || "#A0AEC0",
+                  marginTop: 4,
+                }}
+              >
+                {item.stock} left
               </Text>
             )}
 
-            <View style={{ flexDirection: "column", alignItems: "center", marginTop: 4 }}>
-              <Text style={
-                { color: uiConfig?.priceColor || "#000", fontSize: 16, fontWeight: "bold", marginTop: 4 }
-              }>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6, gap: 6 }}>
+              <Text style={{
+                color: uiConfig?.priceColor || "#111827",
+                fontSize: 15, 
+                fontWeight: "800",
+              }}>
                 ₹{activeVariant?.price || item.price}
               </Text>
               {(activeVariant?.compare_price || item?.compare_price) && (
                 <Text
                   style={{
-                    color: uiConfig?.qtyBgColor || "#888",
+                    color: uiConfig?.qtyBgColor || "#A0AEC0",
                     textDecorationLine: "line-through",
-                    marginLeft: 6
+                    fontSize: 12,
                   }}
                 >
                   ₹{activeVariant?.compare_price || item?.compare_price}
                 </Text>
               )}
-
             </View>
+
+            {/* Delivery badge */}
+            {!isOutOfStock && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6, backgroundColor: uiConfig?.deliveryBadgeBgColor || "#FEF3C7", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, width: "auto", alignSelf: "flex-start" }}>
+                <Ionicons name="flash" size={12} color={uiConfig?.deliveryBadgeTextColor || "#92400E"} />
+                <Text style={{ fontSize: 10, fontWeight: "600", color: uiConfig?.deliveryBadgeTextColor || "#92400E" }}>10 mins</Text>
+              </View>
+            )}
           </TouchableOpacity>
 
-          <View style={{ marginTop: 10 }}>
+          <View style={{ marginTop: 8 }}>
 
             {isOutOfStock ? (
 
-              <View style={dynamicStyles.outOfStock}>
-                <Text style={[dynamicStyles.outText,{color: uiConfig?.buttonTextColor || "#fff"}]}>
+              <View style={[dynamicStyles.outOfStock, { backgroundColor: uiConfig?.outOfStockBgColor || "#E5E7EB" }]}>
+                <Text style={[dynamicStyles.outText, { color: uiConfig?.outOfStockTextColor || "#667781" }]}>
                   OUT OF STOCK
                 </Text>
               </View>
@@ -304,6 +383,7 @@ const CategoryListComponent = ({
                   setPdpVisible(true);
                 }}
               >
+                <Ionicons name="add" size={18} color={uiConfig?.buttonTextColor || "#fff"} />
                 <Text style={dynamicStyles.addButtonText}>
                   {inCart ? "ADD MORE" : "ADD"}
                 </Text>
@@ -323,7 +403,7 @@ const CategoryListComponent = ({
                     });
                   }}
                 >
-                  <Text style={dynamicStyles.qtyText}>-</Text>
+                  <Ionicons name="remove" size={16} color={uiConfig?.buttonColor || "#10B981"} />
                 </TouchableOpacity>
 
                 <Text style={dynamicStyles.qtyValue}>
@@ -340,7 +420,7 @@ const CategoryListComponent = ({
                     });
                   }}
                 >
-                  <Text style={dynamicStyles.qtyText}>+</Text>
+                  <Ionicons name="add" size={16} color={uiConfig?.buttonColor || "#10B981"} />
                 </TouchableOpacity>
 
               </View>
@@ -359,16 +439,26 @@ const CategoryListComponent = ({
 
     <View style={dynamicStyles.container}>
 
-      <Text style={dynamicStyles.headerTitle}>
-        {uiConfig?.headerTitle || "Catalog"}
-      </Text>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 4,
+          borderBottomWidth: 1,
+          borderBottomColor: uiConfig?.borderColor || "#F0F0F0",
+        }}
+      >
+        <Text style={dynamicStyles.headerTitle}>
+          {uiConfig?.headerTitle || "Quick Commerce"}
+        </Text>
+      </View>
 
       {/* ================= SELECTED CATEGORY ================= */}
 
       {!selectedCategory ? (
 
         <Text style={dynamicStyles.selectText}>
-          Please select a catalog...
+          Please select a category...
         </Text>
 
       ) : (
@@ -396,10 +486,14 @@ const CategoryListComponent = ({
             numColumns={gridColumns}
             columnWrapperStyle={{
               justifyContent: "space-between",
-              marginBottom: 12
+              marginBottom: gridGap,
+              paddingHorizontal: gridHorizontalPadding,
             }}
             renderItem={({ item }) => renderItemCard(item)}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingBottom: 120,
+              paddingTop: 4,
+            }}
           />
 
         </>
@@ -434,8 +528,8 @@ const CategoryListComponent = ({
         transparent
         animationType="slide"
       >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalBox}>
+        <View style={dynamicStyles.selectModalOverlay}>
+          <View style={dynamicStyles.selectModalBox}>
             <Text style={dynamicStyles.modalTitle}>
               Select Catalog
             </Text>
@@ -446,8 +540,12 @@ const CategoryListComponent = ({
                 data={CATEGORIES}
                 keyExtractor={(i) => i.id.toString()}
                 numColumns={gridColumns}
-                columnWrapperStyle={{ justifyContent: "space-between" }}
+                columnWrapperStyle={{
+                  justifyContent: "space-between",
+                  marginBottom: modalGridGap,
+                }}
                 renderItem={({ item }) => renderCategoryCard(item)}
+                contentContainerStyle={dynamicStyles.modalListContent}
               />
             ) : (
               <>
@@ -457,8 +555,12 @@ const CategoryListComponent = ({
                     data={mainCatalogues}
                     keyExtractor={(i) => i.id.toString()}
                     numColumns={gridColumns}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
+                    columnWrapperStyle={{
+                      justifyContent: "space-between",
+                      marginBottom: modalGridGap,
+                    }}
                     renderItem={({ item }) => renderMainCatalogCard(item)}
+                    contentContainerStyle={dynamicStyles.modalListContent}
                   />
                 )}
 
@@ -477,8 +579,12 @@ const CategoryListComponent = ({
                       data={filteredCatalogues}
                       keyExtractor={(i) => i.id.toString()}
                       numColumns={gridColumns}
-                      columnWrapperStyle={{ justifyContent: "space-between" }}
+                      columnWrapperStyle={{
+                        justifyContent: "space-between",
+                        marginBottom: modalGridGap,
+                      }}
                       renderItem={({ item }) => renderCategoryCard(item)}
+                      contentContainerStyle={dynamicStyles.modalListContent}
                     />
                   </>
                 )}
@@ -849,7 +955,7 @@ const CategoryListComponent = ({
 
         <View style={{
           flex: 1,
-          backgroundColor: "#000",
+          backgroundColor: uiConfig?.imageViewerBgColor || "#000",
           justifyContent: "center",
           alignItems: "center"
         }}>
@@ -875,7 +981,7 @@ const CategoryListComponent = ({
             }}
           >
 
-            <Text style={{ color: "#fff", fontSize: 16 }}>Close</Text>
+            <Text style={{ color: uiConfig?.buttonTextColor || "#fff", fontSize: 16 }}>Close</Text>
 
           </TouchableOpacity>
 
@@ -892,181 +998,250 @@ export default CategoryListComponent;
 
 /* ================= STYLES ================= */
 
-const styles = (ui, CARD_WIDTH) =>
+const styles = (ui, CARD_WIDTH, gridColumns = 2) =>
   StyleSheet.create({
 
     container: {
       flex: 1,
-      backgroundColor: ui?.pageBgColor || "#0F0F0F",
-      paddingHorizontal: 16
+      backgroundColor: ui?.pageBgColor || "#FFFFFF",
+      paddingHorizontal: 0,
     },
 
     headerTitle: {
-      fontSize: 24,
+      fontSize: 28,
       fontWeight: "800",
-      color: ui?.headerTitleColor || "#E50914",
-      marginVertical: 20
+      color: ui?.headerTitleColor || "#111827",
+      marginVertical: 12,
+      paddingHorizontal: 16,
+      marginTop: 8,
     },
 
     selectText: {
       textAlign: "center",
-      color: "#888",
-      marginTop: 80
+      color: ui?.mutedTextColor || "#A0AEC0",
+      marginTop: 80,
+      fontSize: 14,
     },
 
     selectedBox: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      backgroundColor: ui?.cardBgColor || "#1A1A1A",
-      padding: 14,
-      borderRadius: 16,
-      marginBottom: 20,
+      backgroundColor: ui?.selectedBgColor || "#F0FDF4",
+      padding: 12,
+      borderRadius: 10,
+      marginBottom: 12,
+      marginHorizontal: 16,
       borderWidth: 1,
-      borderColor: "rgba(0,0,0,0.2)"
+      borderColor: ui?.buttonColor || "#10B981",
     },
 
     selectedLabel: {
-      color: ui?.cardTextColor || "#fff",
-      fontWeight: "700"
+      color: ui?.buttonColor || "#10B981",
+      fontWeight: "700",
+      fontSize: 14,
     },
 
     changeText: {
-      color: ui?.cardTextColor || "#E50914",
-      fontWeight: "600"
+      color: ui?.buttonColor || "#10B981",
+      fontWeight: "600",
+      fontSize: 12,
     },
 
     card: {
       width: CARD_WIDTH,
-      backgroundColor: ui?.cardBgColor || "#1A1A1A",
-      borderRadius: 20,
-      padding: 14,
-      marginBottom: 10,
+      backgroundColor: ui?.cardBgColor || "#FFFFFF",
+      borderRadius: 12,
+      padding: 0,
+      marginBottom: 0,
       borderWidth: 1,
-      borderColor: "rgba(0,0,0,0.2)"
+      borderColor: ui?.borderColor || "#F0F0F0",
+      overflow: "hidden",
+    },
+
+    modalCard: {
+      width: `${Math.max(45, Math.floor(100 / gridColumns) - 3)}%`,
+    },
+
+    modalListContent: {
+      paddingBottom: Number(ui?.modalGridGap || ui?.gridGap || 8),
     },
 
     image: {
       width: "100%",
-      height: 110,
-      borderRadius: 14,
-      marginBottom: 10,
-      resizeMode: "contain"
+      height: CARD_WIDTH - 20,
+      borderRadius: 0,
+      marginBottom: 0,
+      resizeMode: "cover",
+      backgroundColor: ui?.imageBgColor || "#F9F9F9",
     },
 
     cardText: {
-      color: ui?.cardTextColor || "#fff",
-      fontWeight: "700"
+      color: ui?.cardTextColor || "#111827",
+      fontWeight: "600",
+      fontSize: 13,
+      marginTop: 6,
+      paddingHorizontal: 8,
+      lineHeight: 15,
     },
 
     cardText2: {
-      color: ui?.cardTextColor || "#fff",
+      color: ui?.cardTextColor || "#111827",
       fontWeight: "700",
-      textAlign: "center"
+      textAlign: "center",
+      fontSize: 13,
+      padding: 10,
     },
 
     priceText: {
-      color: "#aaa",
-      marginTop: 4
+      color: ui?.mutedTextColor || "#A0AEC0",
+      marginTop: 4,
     },
 
     addButton: {
-      backgroundColor: ui?.buttonColor || "#E50914",
+      backgroundColor: ui?.buttonColor || "#10B981",
       paddingVertical: 8,
-      borderRadius: 12,
-      marginTop: 10,
-      alignItems: "center"
+      borderRadius: 8,
+      marginTop: 6,
+      marginHorizontal: 8,
+      marginBottom: 8,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 6,
     },
 
     addButtonText: {
-      color: ui?.buttonTextColor || "#fff",
-      fontWeight: "700"
+      color: ui?.buttonTextColor || "#FFFFFF",
+      fontWeight: "700",
+      fontSize: 13,
+    },
+
+    outOfStock: {
+      backgroundColor: ui?.outOfStockBgColor || "#E5E7EB",
+      paddingVertical: 8,
+      borderRadius: 8,
+      marginHorizontal: 0,
+      marginBottom: 0,
+      alignItems: "center",
+    },
+
+    outText: {
+      color: ui?.outOfStockTextColor || "#667781",
+      fontWeight: "700",
+      fontSize: 12,
     },
 
     qtyContainer: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      backgroundColor: ui?.buttonColor || "#E50914",
-      borderRadius: 12,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      marginTop: 10
+      backgroundColor: ui?.cardBgColor || "#FFFFFF",
+      borderRadius: 8,
+      paddingVertical: 5,
+      paddingHorizontal: 8,
+      marginTop: 6,
+      marginHorizontal: 8,
+      marginBottom: 8,
+      borderWidth: 1.5,
+      borderColor: ui?.buttonColor || "#10B981",
     },
 
     qtyButton: {
-      backgroundColor: ui?.buttonTextColor || "#E50914",
-      width: 26,
-      height: 26,
-      borderRadius: 8,
+      backgroundColor: "transparent",
+      width: 24,
+      height: 24,
+      borderRadius: 6,
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
     },
 
     qtyText: {
-      color: ui?.buttonColor || "#fff",
-      fontWeight: "700"
+      color: ui?.buttonColor || "#10B981",
+      fontWeight: "700",
+      fontSize: 14,
     },
 
     qtyValue: {
-      color: "#fff",
-      fontWeight: "700"
+      color: ui?.buttonColor || "#10B981",
+      fontWeight: "700",
+      fontSize: 13,
+      minWidth: 20,
+      textAlign: "center",
     },
 
     cartContainer: {
       position: "absolute",
       bottom: 20,
       left: 20,
-      right: 20
+      right: 20,
     },
 
     cartButton: {
-      backgroundColor: ui?.buttonColor || "#E50914",
-      paddingVertical: 16,
-      borderRadius: 20,
+      backgroundColor: ui?.buttonColor || "#10B981",
+      paddingVertical: 14,
+      borderRadius: 10,
       alignItems: "center",
-      borderWidth: 1,
-      borderColor: "rgba(0,0,0,0.2)"
+      borderWidth: 0,
+      borderColor: "transparent",
     },
 
     cartText: {
-      color: ui?.buttonTextColor || "#fff",
-      fontWeight: "800"
+      color: ui?.buttonTextColor || "#FFFFFF",
+      fontWeight: "800",
+      fontSize: 14,
     },
 
     modalOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.4)",
+      backgroundColor: "rgba(0,0,0,0.3)",
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+    },
+
+    selectModalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.3)",
+      justifyContent: "flex-end",
     },
 
     modalBox: {
       width: "95%",
-      backgroundColor: ui?.pageBgColor || "#0F0F0F",
-      borderRadius: 24,
+      backgroundColor: ui?.modalBgColor || "#FFFFFF",
+      borderRadius: 16,
       padding: 16,
-      maxHeight: "80%"
+      maxHeight: "80%",
+    },
+    selectModalBox: {
+      width: "100%",
+      backgroundColor: ui?.modalBgColor || "#FFFFFF",
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+      padding: 16,
+      height: "70%",
+      paddingBottom: 24,
     },
      modalBox2: {
       width: "100%",
-      backgroundColor: ui?.pageBgColor || "#0F0F0F",
-      borderRadius: 24,
+      backgroundColor: ui?.modalBgColor || "#FFFFFF",
+      borderRadius: 20,
       padding: 16,
-      maxHeight: "100%"
+      maxHeight: "100%",
     },
 
     modalTitle: {
-      color: ui?.headerTitleColor || "#fff",
-      fontSize: 20,
+      color: ui?.modalTitleColor || ui?.headerTitleColor || "#111827",
+      fontSize: 22,
       fontWeight: "800",
       textAlign: "center",
-      marginBottom: 20
+      marginBottom: 16,
     },
 
     authOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.55)",
+      backgroundColor: "rgba(0,0,0,0.4)",
       justifyContent: "center",
       alignItems: "center",
       paddingHorizontal: 24,
@@ -1074,25 +1249,25 @@ const styles = (ui, CARD_WIDTH) =>
 
     authModalCard: {
       width: "100%",
-      backgroundColor: ui?.modalBgColor || ui?.pageBgColor || "#121212",
-      borderRadius: 20,
+      backgroundColor: ui?.modalBgColor || "#FFFFFF",
+      borderRadius: 16,
       padding: 20,
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.08)",
+      borderWidth: 0,
+      borderColor: "transparent",
     },
 
     authModalTitle: {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: "800",
-      color: ui?.headerTitleColor || "#fff",
+      color: ui?.modalTitleColor || "#111827",
       marginBottom: 10,
       textAlign: "center",
     },
 
     authModalMessage: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: ui?.cardTextColor || "#d4d4d4",
+      fontSize: 13,
+      lineHeight: 18,
+      color: ui?.cardTextColor || "#667781",
       textAlign: "center",
       marginBottom: 18,
     },
@@ -1105,30 +1280,32 @@ const styles = (ui, CARD_WIDTH) =>
 
     authCancelBtn: {
       flex: 1,
-      backgroundColor: "rgba(255,255,255,0.08)",
-      borderRadius: 12,
+      backgroundColor: ui?.qtyBgColor || "#F0F0F0",
+      borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
       paddingVertical: 12,
     },
 
     authCancelText: {
-      color: ui?.cardTextColor || "#fff",
+      color: ui?.cardTextColor || "#111827",
       fontWeight: "700",
+      fontSize: 14,
     },
 
     authLoginBtn: {
       flex: 1,
-      backgroundColor: ui?.buttonColor || "#E50914",
-      borderRadius: 12,
+      backgroundColor: ui?.buttonColor || "#10B981",
+      borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
       paddingVertical: 12,
     },
 
     authLoginText: {
-      color: ui?.buttonTextColor || "#fff",
+      color: ui?.buttonTextColor || "#FFFFFF",
       fontWeight: "800",
+      fontSize: 14,
     }
 
   })

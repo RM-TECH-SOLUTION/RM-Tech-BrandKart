@@ -33,8 +33,9 @@ export default function HomeTabs({
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="HomeTab"
         options={{
+          tabBarLabel: "Home",
           tabBarIcon: ({ color }) => (
             <Ionicons
               name="home-outline"
