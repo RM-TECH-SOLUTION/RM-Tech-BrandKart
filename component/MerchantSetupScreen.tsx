@@ -16,6 +16,7 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useMerchantStore from "../store/useMerchantStore";
 
@@ -47,7 +48,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const { setMerchant } = useMerchantStore();
 
   const fallbackMerchantIcon = require("../assets/adaptive-icon-rm.png");
-  const rmLogo = require("../assets/adaptive-icon-rm.png");
+  const rmLogo = require("../assets/rmtechlogo.png");
+  const bannerImage = require("../assets/banner.png");
 
   const mapMerchant = (item: any): MerchantItem | null => {
     const id = Number(item?.merchantId ?? item?.id ?? item?.merchant_id);
@@ -169,83 +171,128 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
     const useFallbackImage = !item.merchantLogo || brokenImageMap[item.merchantId];
 
     return (
-      <Pressable
-        disabled={isInactive}
-        style={[
-          styles.merchantCard,
-          isSelected ? styles.merchantCardSelected : null,
-          isInactive ? styles.merchantCardInactive : null,
-        ]}
-        onPress={() => {
-          if (isInactive) {
-            return;
-          }
+      <View style={styles.merchantCardOuter}>
+        <Pressable
+          disabled={isInactive}
+          style={[
+            styles.merchantCard,
+            isSelected && styles.merchantCardSelected,
+            isInactive && styles.merchantCardInactive,
+          ]}
+          onPress={() => {
+            if (isInactive) return;
+            setSelectedMerchantId(item.merchantId);
+            if (error) setError("");
+          }}
+        >
+          <View style={styles.merchantCardBody}>
+            <View style={styles.merchantCardLeft}>
+              <View style={styles.merchantIconWrap}>
+                <Image
+                  source={fallbackMerchantIcon}
+                  style={styles.merchantIcon}
+                  resizeMode="contain"
+                />
+              </View>
 
-          setSelectedMerchantId(item.merchantId);
-          if (error) setError("");
-        }}
-      >
-        <View style={styles.merchantLeft}>
-          <Image
-            source={useFallbackImage ? fallbackMerchantIcon : { uri: item.merchantLogo }}
-            style={styles.merchantLogo}
-            resizeMode="cover"
-            onError={() => {
-              setBrokenImageMap((prev) => ({ ...prev, [item.merchantId]: true }));
-            }}
-          />
+              <View style={styles.merchantInfo}>
+                <Text style={styles.merchantName} numberOfLines={1}>
+                  {item.merchantName}
+                </Text>
+                <Text style={styles.merchantCategory} numberOfLines={1}>
+                  {item.merchantLocation || "Clothing"}
+                </Text>
+                <View style={styles.starsRow}>
+                  <View style={styles.starIconsRow}>
+                    {[1, 2, 3, 4].map((s) => (
+                      <Ionicons key={s} name="star" size={13} color="#6D28D9" />
+                    ))}
+                    <Ionicons name="star-half" size={13} color="#C4B5FD" />
+                  </View>
+                  <Text style={styles.ratingText}>4.5/5</Text>
+                </View>
+              </View>
+            </View>
 
-          <View style={styles.merchantInfo}>
-            <Text style={styles.merchantName}>{item.merchantName}</Text>
-            <Text style={styles.merchantLocation} numberOfLines={1}>
-              {item.merchantLocation || `Merchant ID ${item.merchantId}`}
-            </Text>
-            <View style={styles.metaRow}>
-              <Ionicons name="star" size={13} color="#F4B400" />
-              <Text style={styles.metaText}>4.5%</Text>
-              <Text style={[styles.merchantStatus, isInactive ? styles.inactiveText : null]}>
-                {isInactive ? "Inactive" : "Active"}
-              </Text>
+            <View style={styles.merchantThumbWrap}>
+              <Image
+                source={useFallbackImage ? fallbackMerchantIcon : { uri: item.merchantLogo }}
+                style={styles.merchantThumb}
+                resizeMode="cover"
+                onError={() => {
+                  setBrokenImageMap((prev) => ({ ...prev, [item.merchantId]: true }));
+                }}
+              />
+              <View style={[styles.statusBadge, isInactive && styles.statusBadgeInactive]}>
+                <Text style={styles.statusBadgeText}>
+                  {isInactive ? "CLOSED" : isSelected ? "NOW OPEN" : "OPEN"}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        </Pressable>
 
-        <Ionicons
-          name="chevron-forward"
-          size={20}
-          color={isSelected ? "#2F6DF6" : "#A6AFB9"}
-        />
-      </Pressable>
+        {isSelected && (
+          <View style={styles.checkmarkBadge}>
+            <Ionicons name="checkmark" size={13} color="#FFF" />
+          </View>
+        )}
+      </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}
-    >
+    <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
           style={styles.wrapper}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.headerIconBtn}
-              activeOpacity={0.8}
-            >
-            </TouchableOpacity>
+          {/* Navbar — rmtechlogo.png centered */}
+          <View style={styles.navbar}>
+            <Image
+              source={rmLogo}
+              style={styles.navbarLogo}
+              resizeMode="cover"
+            />
+          </View>
 
-            <Text style={styles.title}>Merchant Selection</Text>
+          {/* Banner */}
+          <View style={styles.bannerWrap}>
+            <Image
+              source={bannerImage}
+              style={styles.banner}
+              resizeMode="cover"
+            />
+          </View>
 
-            <TouchableOpacity style={styles.headerIconBtn} activeOpacity={0.8}>
-            </TouchableOpacity>
+          {/* Section heading + search */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>SELECT A MERCHANT</Text>
+          </View>
+
+          {/* Filter chips */}
+          <View style={styles.filterRow}>
+            {(["all", "active", "inactive"] as const).map((f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.filterChip, statusFilter === f && styles.filterChipActive]}
+                onPress={() => setStatusFilter(f)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.filterChipText, statusFilter === f && styles.filterChipTextActive]}>
+                  {f === "all" ? "All" : f === "active" ? "Active" : "Inactive"}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           <View style={styles.searchWrap}>
-            <Ionicons name="search" size={18} color="#7B8794" />
+            <Ionicons name="search" size={18} color="#9CA3AF" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search for listing"
-              placeholderTextColor="#9AA5B1"
+              placeholder="Search stores..."
+              placeholderTextColor="#A0AEC0"
               value={searchText}
               onChangeText={(text) => {
                 setSearchText(text);
@@ -254,38 +301,17 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
               autoCapitalize="none"
               autoCorrect={false}
             />
+            {searchText ? (
+              <TouchableOpacity onPress={() => setSearchText("")}>
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            ) : null}
           </View>
 
-          <View style={styles.filterRow}>
-            <TouchableOpacity
-              style={[styles.filterChip, statusFilter === "all" ? styles.filterChipActive : null]}
-              onPress={() => setStatusFilter("all")}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.filterChipText, statusFilter === "all" ? styles.filterChipTextActive : null]}>All Items</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterChip, statusFilter === "active" ? styles.filterChipActive : null]}
-              onPress={() => setStatusFilter("active")}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.filterChipText, statusFilter === "active" ? styles.filterChipTextActive : null]}>Active</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterChip, statusFilter === "inactive" ? styles.filterChipActive : null]}
-              onPress={() => setStatusFilter("inactive")}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.filterChipText, statusFilter === "inactive" ? styles.filterChipTextActive : null]}>Inactive</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.listWrap}>
+          <View style={{ flex: 1 }}>
             {loading ? (
               <View style={styles.stateWrap}>
-                <ActivityIndicator size="large" color="#25D366" />
+                <ActivityIndicator size="large" color="#6D28D9" />
                 <Text style={styles.stateText}>Loading merchants...</Text>
               </View>
             ) : (
@@ -295,7 +321,7 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
                 renderItem={renderMerchantItem}
                 contentContainerStyle={styles.listContent}
                 keyboardShouldPersistTaps="handled"
-                ItemSeparatorComponent={() => <View style={styles.itemDivider} />}
+                showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                   <View style={styles.stateWrap}>
                     <Text style={styles.stateText}>No merchants match your search.</Text>
@@ -324,22 +350,39 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
               </TouchableOpacity>
             ) : null}
 
+            {selectedMerchant ? (
+              <View style={styles.selectedBar}>
+                <Ionicons name="checkmark-circle" size={16} color="#7C3AED" />
+                <Text style={styles.selectedBarText}>
+                  SELECTED: <Text style={styles.selectedBarName}>{selectedMerchant.merchantName}</Text>
+                  {selectedMerchant.merchantLocation ? (
+                    <Text style={styles.selectedBarSub}> ({selectedMerchant.merchantLocation})</Text>
+                  ) : null}
+                </Text>
+              </View>
+            ) : null}
+
             <TouchableOpacity
               style={[
-                styles.button,
-                (!selectedMerchantId || loading || submitting) ? styles.buttonDisabled : null,
+                styles.buttonOuter,
+                (!selectedMerchantId || loading || submitting) && styles.buttonDisabled,
               ]}
               onPress={handleSubmit}
               disabled={!selectedMerchantId || loading || submitting}
               activeOpacity={0.9}
             >
-              {submitting ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {selectedMerchant ? `Continue (ID: ${selectedMerchant.merchantId})` : "Continue"}
-                </Text>
-              )}
+              <LinearGradient
+                colors={["#2E90FF", "#9B5CFF"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.button}
+              >
+                {submitting ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.buttonText}>Continue  ›</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -348,7 +391,7 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
       {submitting ? (
         <View style={styles.transitionLoaderOverlay}>
           <Image source={rmLogo} style={styles.transitionLoaderLogo} resizeMode="contain" />
-          <ActivityIndicator size="small" color="#111827" style={styles.transitionLoaderSpinner} />
+          <ActivityIndicator size="small" color="#6D28D9" style={styles.transitionLoaderSpinner} />
           <Text style={styles.transitionLoaderText}>Opening merchant...</Text>
         </View>
       ) : null}
@@ -359,226 +402,359 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F5F5F5",
   },
   wrapper: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 6,
     paddingBottom: 12,
   },
-  header: {
-    minHeight: 46,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    // marginBottom: 10,
-    marginTop: 20,
-  },
-  headerIconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+
+  // ── Navbar ──────────────────────────────────────────────
+  navbar: {
+    backgroundColor: "#FFFFFF",
+    paddingTop: 34,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EBEBEB",
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    fontSize: 22,
+  navbarLogo: {
+    width: 150,
+    height: 66,
+  },
+
+  // ── Banner ──────────────────────────────────────────────
+  bannerWrap: {
+    marginHorizontal: 0,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    overflow: "hidden",
+  },
+  banner: {
+    width: "100%",
+    height: 120,
+  },
+
+  // ── Section heading ─────────────────────────────────────
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 6,
+  },
+  sectionTitle: {
+    fontSize: 13,
     fontWeight: "700",
-    color: "#111B21",
-    letterSpacing: 0,
+    color: "#374151",
+    letterSpacing: 0.6,
   },
-  searchWrap: {
-    height: 46,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 11,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#E6EBF0",
-    marginBottom: 10,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    color: "#111B21",
-    fontSize: 14,
-    paddingVertical: 0,
-  },
+
+  // ── Filter chips ────────────────────────────────────────
   filterRow: {
     flexDirection: "row",
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    gap: 8,
   },
   filterChip: {
-    height: 36,
-    paddingHorizontal: 15,
-    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E6EBF0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 8,
+    borderColor: "#E5E7EB",
   },
   filterChipActive: {
-    borderColor: "#C7D2FE",
-    backgroundColor: "#EEF2FF",
+    backgroundColor: "#EDE9FE",
+    borderColor: "#8B5CF6",
   },
   filterChipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#4B5563",
+    color: "#6B7280",
   },
   filterChipTextActive: {
-    color: "#2F6DF6",
+    color: "#6D28D9",
   },
-  listWrap: {
-    flex: 1,
+
+  // ── Search ──────────────────────────────────────────────
+  searchWrap: {
+    height: 44,
     backgroundColor: "#FFFFFF",
-    borderRadius: 0,
-    borderWidth: 0,
-    overflow: "hidden",
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginHorizontal: 16,
+    marginBottom: 10,
   },
+  searchInput: {
+    flex: 1,
+    marginHorizontal: 8,
+    color: "#111827",
+    fontSize: 14,
+    paddingVertical: 0,
+  },
+
+  // ── List ────────────────────────────────────────────────
   listContent: {
-    paddingHorizontal: 0,
-    paddingTop: 2,
-    paddingBottom: 14,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 12,
+    gap: 10,
   },
-  itemDivider: {
-    height: 1,
-    backgroundColor: "#EEF2F6",
-    marginLeft: 64,
-  },
+
+  // ── Merchant card ────────────────────────────────────────
   merchantCard: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 0,
-    paddingVertical: 11,
-    borderRadius: 0,
+    alignItems: "stretch",
+    padding: 0,
     backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: "#C4B5FD",
+    overflow: "hidden",
+    minHeight: 100,
+  },
+  merchantCardOuter: {
+    position: "relative",
+    overflow: "visible",
   },
   merchantCardSelected: {
-    backgroundColor: "#F7F9FD",
+    backgroundColor: "#FAF5FF",
+    borderColor: "#7C3AED",
   },
   merchantCardInactive: {
-    opacity: 0.65,
+    opacity: 0.5,
   },
-  merchantLeft: {
+
+  merchantCardBody: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
+  },
+  merchantCardLeft: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingRight: 8,
   },
-  merchantLogo: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "#EFF3F7",
-    borderWidth: 1,
-    borderColor: "#E6EDF3",
+
+  // Left icon
+  merchantIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: "#EEF2FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    overflow: "hidden",
   },
+  merchantIcon: {
+    width: 34,
+    height: 34,
+  },
+
+  // Center text
   merchantInfo: {
-    marginLeft: 10,
     flex: 1,
+    paddingRight: 8,
   },
   merchantName: {
-    color: "#111B21",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
+    color: "#0F1B46",
+    marginBottom: 0,
+    textTransform: "uppercase",
   },
-  merchantLocation: {
-    color: "#7A8A99",
-    fontSize: 12,
-    marginTop: 1,
+  merchantCategory: {
+    fontSize: 13,
+    color: "#111827",
+    marginTop: 2,
+    marginBottom: 6,
   },
-  metaRow: {
+  starsRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 3,
+    gap: 6,
   },
-  metaText: {
-    marginLeft: 4,
-    color: "#6A7785",
-    fontSize: 11,
-    fontWeight: "600",
+  starIconsRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  merchantStatus: {
-    marginLeft: 8,
-    color: "#1B9E5A",
-    fontSize: 11,
-    fontWeight: "600",
+  ratingText: {
+    fontSize: 12,
+    color: "#111827",
+    fontWeight: "500",
   },
-  inactiveText: {
-    color: "#D64545",
+
+  // Right thumbnail + badge
+  merchantThumbWrap: {
+    position: "relative",
+    width: 96,
+    height: 100,
+    borderTopRightRadius: 14,
+    borderBottomRightRadius: 14,
+    overflow: "hidden",
+    flexShrink: 0,
+    alignSelf: "stretch",
+    marginLeft: 0,
   },
+  merchantThumb: {
+    width: 96,
+    height: 100,
+  },
+  statusBadge: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#DED6FF",
+    paddingVertical: 7,
+    alignItems: "center",
+  },
+  statusBadgeInactive: {
+    backgroundColor: "#E5E7EB",
+  },
+  statusBadgeText: {
+    color: "#111827",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  checkmarkBadge: {
+    position: "absolute",
+    top: -12,
+    right: -12,
+    zIndex: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#7C3AED",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+
+  // ── States ───────────────────────────────────────────────
   stateWrap: {
-    paddingVertical: 36,
+    paddingVertical: 48,
     alignItems: "center",
   },
   stateText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 14,
-    color: "#54656F",
+    color: "#9CA3AF",
+  },
+
+  // ── Footer ───────────────────────────────────────────────
+  footer: {
+    paddingTop: 6,
+    paddingHorizontal: 16,
   },
   errorText: {
-    color: "#D64545",
+    color: "#EF4444",
     fontSize: 13,
     marginBottom: 8,
     textAlign: "center",
+    fontWeight: "500",
   },
   retryBtn: {
-    height: 40,
-    borderRadius: 20,
+    height: 44,
+    borderRadius: 10,
     backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#DCE3E9",
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
   },
   retryText: {
     fontSize: 14,
-    color: "#111B21",
+    color: "#111827",
     fontWeight: "600",
   },
-  footer: {
-    paddingTop: 10,
-  },
-  button: {
-    backgroundColor: "#2F6DF6",
-    borderRadius: 12,
-    height: 50,
-    justifyContent: "center",
+  selectedBar: {
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#F5F3FF",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#DDD6FE",
   },
-  buttonDisabled: {
-    opacity: 0.5,
+  selectedBarText: {
+    marginLeft: 8,
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+    flex: 1,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
+  selectedBarName: {
+    color: "#6D28D9",
     fontWeight: "700",
   },
+  selectedBarSub: {
+    color: "#9CA3AF",
+    fontWeight: "400",
+  },
+  button: {
+    height: 52,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 14,
+  },
+  buttonOuter: {
+    borderRadius: 14,
+    overflow: "hidden",
+    shadowColor: "#2E90FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  buttonDisabled: {
+    opacity: 0.55,
+  },
+  buttonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  // ── Transition overlay ───────────────────────────────────
   transitionLoaderOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 999,
   },
   transitionLoaderLogo: {
-    width: 110,
-    height: 110,
-    borderRadius: 20,
+    width: 180,
+    height: 60,
+    marginBottom: 20,
   },
   transitionLoaderSpinner: {
-    marginTop: 16,
+    marginTop: 4,
   },
   transitionLoaderText: {
-    marginTop: 10,
-    color: "#111827",
-    fontSize: 14,
+    marginTop: 14,
+    color: "#374151",
+    fontSize: 15,
     fontWeight: "600",
   },
 });
