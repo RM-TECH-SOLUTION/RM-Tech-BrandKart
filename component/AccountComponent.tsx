@@ -4,7 +4,8 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -107,7 +108,10 @@ const AccountComponent = () => {
       ]}
       style={styles.container}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
 
         <ProfileComponent
           navigation={navigation}
@@ -150,6 +154,15 @@ const AccountComponent = () => {
               />
             </Pressable>
           ))}
+        </View>
+
+        <View style={styles.poweredByWrap}>
+          <Text style={styles.poweredByText}>Powered by</Text>
+            <Image
+              source={require("../assets/rmtechlogo.png")}
+              style={styles.poweredByLogo}
+              resizeMode="cover"
+            />
         </View>
 
       </ScrollView>
@@ -206,5 +219,21 @@ const createStyles = (ui: any, isDarkBackground: boolean) =>
       fontSize: 16,
       fontWeight: "600",
       color: ui?.cardTextColor || "#fff"
+    },
+
+    poweredByWrap: {
+      alignItems: "center",
+      justifyContent: "flex-end",
+    },
+
+    poweredByText: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: isDarkBackground ?  "#000000":"#a1a9b6" ,
+    },
+
+    poweredByLogo: {
+      width: "30%",
+      height: "30%",
     }
   });

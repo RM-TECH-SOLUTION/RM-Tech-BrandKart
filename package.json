@@ -13,6 +13,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@finan-me/react-native-thermal-printer": "^1.0.9",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "^12.0.1",
     "@react-native-firebase/app": "^23.8.8",
     "@react-native-firebase/messaging": "^23.8.8",
     "@react-native-picker/picker": "2.11.1",
