@@ -48,8 +48,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const { setMerchant } = useMerchantStore();
 
   const fallbackMerchantIcon = require("../assets/adaptive-icon-rm.png");
-  const rmLogo = require("../assets/rmtechlogo.png");
-  const bannerImage = require("../assets/banner.png");
+  const rmLogo = require("../assets/RMtechbbrandcart.png");
+  const bannerImage = require("../assets/banner2.png");
 
   const mapMerchant = (item: any): MerchantItem | null => {
     const id = Number(item?.merchantId ?? item?.id ?? item?.merchant_id);
@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   navbarLogo: {
-    width: 150,
-    height: 66,
+    width: 240,
+    height: 76,
   },
 
   // ── Banner ──────────────────────────────────────────────
@@ -432,14 +432,14 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: "100%",
-    height: 120,
+    height: 140,
   },
 
   // ── Section heading ─────────────────────────────────────
   sectionHeader: {
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 6,
+    paddingTop: 10,
+    paddingBottom: 5,
   },
   sectionTitle: {
     fontSize: 13,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: "row",
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 5,
     gap: 8,
   },
   filterChip: {
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   // ── Footer ───────────────────────────────────────────────
   footer: {
     paddingTop: 6,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
   },
   errorText: {
     color: "#EF4444",
@@ -688,10 +688,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F3FF",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 10,
+    borderRadius: 50,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: "#DDD6FE",
   },
@@ -711,13 +711,13 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   button: {
-    height: 52,
+    height: 42,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 14,
   },
   buttonOuter: {
-    borderRadius: 14,
+    borderRadius: 50,
     overflow: "hidden",
     shadowColor: "#2E90FF",
     shadowOffset: { width: 0, height: 4 },

@@ -156,16 +156,16 @@ const AccountComponent = () => {
           ))}
         </View>
 
-        <View style={styles.poweredByWrap}>
-          <Text style={styles.poweredByText}>Powered by</Text>
-            <Image
-              source={require("../assets/rmtechlogo.png")}
-              style={styles.poweredByLogo}
-              resizeMode="cover"
-            />
-        </View>
-
       </ScrollView>
+
+      <View style={styles.poweredByWrap}>
+        <Text style={styles.poweredByText}>Powered by</Text>
+          <Image
+            source={require("../assets/rmtechlogo.png")}
+            style={styles.poweredByLogo}
+            resizeMode="cover"
+          />
+      </View>
     </LinearGradient>
   );
 };
@@ -180,7 +180,8 @@ const createStyles = (ui: any, isDarkBackground: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: 10
+      paddingTop: 10,
+      justifyContent: "space-between"
     },
 
     sectionTitle: {
@@ -221,19 +222,23 @@ const createStyles = (ui: any, isDarkBackground: boolean) =>
       color: ui?.cardTextColor || "#fff"
     },
 
+    scrollContent: {
+      paddingBottom: 20,
+    },
+
     poweredByWrap: {
       alignItems: "center",
-      justifyContent: "flex-end",
+      justifyContent: "center",
     },
 
     poweredByText: {
       fontSize: 12,
       fontWeight: "600",
-      color: isDarkBackground ?  "#000000":"#a1a9b6" ,
+      color: isDarkBackground ?  "#FFFFFF":"#a1a9b6" ,
     },
 
     poweredByLogo: {
-      width: "30%",
-      height: "30%",
+      width: 80,
+      height: 40,
     }
   });
