@@ -18,6 +18,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Location from "expo-location";
 import useMerchantStore from "../store/useMerchantStore";
 
 const MERCHANT_LIST_URL = "https://api.rmtechsolution.com/getMerchant?";
@@ -30,8 +31,18 @@ interface MerchantItem {
   merchantId: number;
   merchantName: string;
   status: string;
-  merchantLogo?: string;
-  merchantLocation?: string;
+  storeType: string;
+  storeLogo?: string;
+  typeLogo?: string;
+  latitude?: string;
+  longitude?: string;
+  phone?: string;
+  distance?: number;
+}
+
+interface UserLocation {
+  latitude: number;
+  longitude: number;
 }
 
 const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation }) => {
@@ -44,6 +55,7 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
 
   const { setMerchant } = useMerchantStore();
 
@@ -51,22 +63,69 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const rmLogo = require("../assets/RMtechbbrandcart.png");
   const bannerImage = require("../assets/banner2.png");
 
-  const mapMerchant = (item: any): MerchantItem | null => {
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Get user's location
+  const getUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError("Location permission denied. Showing all merchants.");
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    } catch (err) {
+      console.log("Location error:", err);
+      setError("Unable to get your location. Showing all merchants.");
+    }
+  };
+
+  const mapMerchant = (item: any, userLoc?: UserLocation): MerchantItem | null => {
     const id = Number(item?.merchantId ?? item?.id ?? item?.merchant_id);
-    const name = String(item?.name ?? item?.merchantName ?? item?.merchant_name ?? "").trim();
+    const name = String(item?.name ?? item?.merchantName ?? "").trim();
     const status = String(item?.status ?? "active").toLowerCase();
+    const storeType = String(item?.storeType ?? "Retail").trim();
+    const lat = Number(item?.latitude);
+    const lon = Number(item?.longitude);
 
     if (!id || !name) {
       return null;
     }
 
-    return {
+    const merchant: MerchantItem = {
       merchantId: id,
       merchantName: name,
       status,
-      merchantLogo: item?.merchantLogo ?? item?.logo ?? item?.image,
-      merchantLocation: item?.merchantLocation ?? item?.location ?? "",
+      storeType,
+      storeLogo: item?.storeLogo ?? item?.merchantLogo ?? item?.logo,
+      typeLogo: item?.typeLogo ?? item?.categoryLogo,
+      latitude: item?.latitude,
+      longitude: item?.longitude,
+      phone: item?.phone,
     };
+
+    // Calculate distance if we have user location and merchant coordinates
+    if (userLoc && !isNaN(lat) && !isNaN(lon)) {
+      merchant.distance = calculateDistance(userLoc.latitude, userLoc.longitude, lat, lon);
+    }
+
+    return merchant;
   };
 
   const fetchMerchants = async () => {
@@ -98,8 +157,13 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
         : [];
 
       const parsed = rawList
-        .map(mapMerchant)
+        .map((item: any) => mapMerchant(item, userLocation))
         .filter((item: MerchantItem | null): item is MerchantItem => Boolean(item));
+
+      // Sort by distance if user location is available
+      if (userLocation && parsed.some(m => m.distance !== undefined)) {
+        parsed.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+      }
 
       if (!parsed.length) {
         setError("No merchants found right now.");
@@ -114,15 +178,24 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   };
 
   useEffect(() => {
-    fetchMerchants();
+    const initializeApp = async () => {
+      await getUserLocation();
+      // Fetch merchants will be called after location is set
+    };
+    initializeApp();
   }, []);
+
+  useEffect(() => {
+    // Fetch merchants whenever user location is determined
+    fetchMerchants();
+  }, [userLocation]);
 
   const filteredMerchants = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     return merchants.filter((merchant) => {
       const nameMatch = merchant.merchantName.toLowerCase().includes(query);
-      const locationMatch = (merchant.merchantLocation || "").toLowerCase().includes(query);
-      const matchesSearch = !query || nameMatch || locationMatch;
+      const typeMatch = (merchant.storeType || "").toLowerCase().includes(query);
+      const matchesSearch = !query || nameMatch || typeMatch;
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" && merchant.status === "active") ||
@@ -130,7 +203,7 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
 
       return matchesSearch && matchesStatus;
     });
-  }, [merchants, searchText, statusFilter]);
+  }, [merchants, searchText, statusFilter]); 
 
   const selectedMerchant = useMemo(
     () => merchants.find((item) => item.merchantId === selectedMerchantId) || null,
@@ -168,7 +241,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
   const renderMerchantItem = ({ item }: { item: MerchantItem }) => {
     const isSelected = item.merchantId === selectedMerchantId;
     const isInactive = item.status !== "active";
-    const useFallbackImage = !item.merchantLogo || brokenImageMap[item.merchantId];
+    const useFallbackTypeImage = !item.typeLogo || brokenImageMap[`type_${item.merchantId}`];
+    const useFallbackStoreImage = !item.storeLogo || brokenImageMap[`store_${item.merchantId}`];
 
     return (
       <View style={styles.merchantCardOuter}>
@@ -186,41 +260,43 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
           }}
         >
           <View style={styles.merchantCardBody}>
+            {/* Left: Type Logo */}
             <View style={styles.merchantCardLeft}>
               <View style={styles.merchantIconWrap}>
                 <Image
-                  source={fallbackMerchantIcon}
+                  source={useFallbackTypeImage ? fallbackMerchantIcon : { uri: item.typeLogo }}
                   style={styles.merchantIcon}
                   resizeMode="contain"
+                  onError={() => {
+                    setBrokenImageMap((prev) => ({ ...prev, [`type_${item.merchantId}`]: true }));
+                  }}
                 />
               </View>
 
+              {/* Center: Merchant Info */}
               <View style={styles.merchantInfo}>
                 <Text style={styles.merchantName} numberOfLines={1}>
                   {item.merchantName}
                 </Text>
                 <Text style={styles.merchantCategory} numberOfLines={1}>
-                  {item.merchantLocation || "Clothing"}
+                  {item.storeType || "Retail"}
                 </Text>
-                <View style={styles.starsRow}>
-                  <View style={styles.starIconsRow}>
-                    {[1, 2, 3, 4].map((s) => (
-                      <Ionicons key={s} name="star" size={13} color="#6D28D9" />
-                    ))}
-                    <Ionicons name="star-half" size={13} color="#C4B5FD" />
-                  </View>
-                  <Text style={styles.ratingText}>4.5/5</Text>
-                </View>
+                {item.distance !== undefined && (
+                  <Text style={styles.distanceText}>
+                    {item.distance.toFixed(1)} km away
+                  </Text>
+                )}
               </View>
             </View>
 
+            {/* Right: Store Logo + Status */}
             <View style={styles.merchantThumbWrap}>
               <Image
-                source={useFallbackImage ? fallbackMerchantIcon : { uri: item.merchantLogo }}
+                source={useFallbackStoreImage ? fallbackMerchantIcon : { uri: item.storeLogo }}
                 style={styles.merchantThumb}
                 resizeMode="cover"
                 onError={() => {
-                  setBrokenImageMap((prev) => ({ ...prev, [item.merchantId]: true }));
+                  setBrokenImageMap((prev) => ({ ...prev, [`store_${item.merchantId}`]: true }));
                 }}
               />
               <View style={[styles.statusBadge, isInactive && styles.statusBadgeInactive]}>
@@ -355,8 +431,11 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
                 <Ionicons name="checkmark-circle" size={16} color="#7C3AED" />
                 <Text style={styles.selectedBarText}>
                   SELECTED: <Text style={styles.selectedBarName}>{selectedMerchant.merchantName}</Text>
-                  {selectedMerchant.merchantLocation ? (
-                    <Text style={styles.selectedBarSub}> ({selectedMerchant.merchantLocation})</Text>
+                  {selectedMerchant.storeType ? (
+                    <Text style={styles.selectedBarSub}> ({selectedMerchant.storeType})</Text>
+                  ) : null}
+                  {selectedMerchant.distance !== undefined ? (
+                    <Text style={styles.selectedBarSub}> • {selectedMerchant.distance.toFixed(1)} km</Text>
                   ) : null}
                 </Text>
               </View>
@@ -560,8 +639,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   merchantIcon: {
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 44,
+    borderRadius: 5,
   },
 
   // Center text
@@ -581,6 +661,11 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginTop: 2,
     marginBottom: 6,
+  },
+  distanceText: {
+    fontSize: 12,
+    color: "#7C3AED",
+    fontWeight: "500",
   },
   starsRow: {
     flexDirection: "row",
