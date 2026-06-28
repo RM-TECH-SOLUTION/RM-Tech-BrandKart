@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -45,13 +45,88 @@ interface UserLocation {
   longitude: number;
 }
 
+const fallbackMerchantIcon = require("../assets/adaptive-icon-rm.png");
+
+interface MerchantCardProps {
+  item: MerchantItem;
+  isSelected: boolean;
+  onPress: (id: number) => void;
+}
+
+const MerchantCard = React.memo(({ item, isSelected, onPress }: MerchantCardProps) => {
+  const [typeImageBroken, setTypeImageBroken] = useState(false);
+  const [storeImageBroken, setStoreImageBroken] = useState(false);
+  const isInactive = item.status !== "active";
+  const useFallbackTypeImage = !item.typeLogo || typeImageBroken;
+  const useFallbackStoreImage = !item.storeLogo || storeImageBroken;
+
+  return (
+    <View style={styles.merchantCardOuter}>
+      <Pressable
+        disabled={isInactive}
+        style={[
+          styles.merchantCard,
+          isSelected && styles.merchantCardSelected,
+          isInactive && styles.merchantCardInactive,
+        ]}
+        onPress={() => {
+          if (!isInactive) onPress(item.merchantId);
+        }}
+      >
+        <View style={styles.merchantCardBody}>
+          <View style={styles.merchantCardLeft}>
+            <View style={styles.merchantIconWrap}>
+              <Image
+                source={useFallbackTypeImage ? fallbackMerchantIcon : { uri: item.typeLogo }}
+                style={styles.merchantIcon}
+                resizeMode="contain"
+                onError={() => setTypeImageBroken(true)}
+              />
+            </View>
+            <View style={styles.merchantInfo}>
+              <Text style={styles.merchantName} numberOfLines={1}>
+                {item.merchantName}
+              </Text>
+              <Text style={styles.merchantCategory} numberOfLines={1}>
+                {item.storeType || "Retail"}
+              </Text>
+              {item.distance !== undefined && (
+                <Text style={styles.distanceText}>
+                  {item.distance.toFixed(1)} km away
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.merchantThumbWrap}>
+            <Image
+              source={useFallbackStoreImage ? fallbackMerchantIcon : { uri: item.storeLogo }}
+              style={styles.merchantThumb}
+              resizeMode="cover"
+              onError={() => setStoreImageBroken(true)}
+            />
+            <View style={[styles.statusBadge, isInactive && styles.statusBadgeInactive]}>
+              <Text style={styles.statusBadgeText}>
+                {isInactive ? "CLOSED" : isSelected ? "NOW OPEN" : "OPEN"}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+      {isSelected && (
+        <View style={styles.checkmarkBadge}>
+          <Ionicons name="checkmark" size={13} color="#FFF" />
+        </View>
+      )}
+    </View>
+  );
+});
+
 const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [searchText, setSearchText] = useState("");
   const [merchants, setMerchants] = useState<MerchantItem[]>([]);
   const [selectedMerchantId, setSelectedMerchantId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [brokenImageMap, setBrokenImageMap] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -59,9 +134,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
 
   const { setMerchant } = useMerchantStore();
 
-  const fallbackMerchantIcon = require("../assets/adaptive-icon-rm.png");
   const rmLogo = require("../assets/RMtechbbrandcart.png");
-  const bannerImage = require("../assets/banner2.png");
+  const bannerImage = require("../assets/rmtechbrndbanner.png");
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -238,84 +312,18 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
     }
   };
 
-  const renderMerchantItem = ({ item }: { item: MerchantItem }) => {
-    const isSelected = item.merchantId === selectedMerchantId;
-    const isInactive = item.status !== "active";
-    const useFallbackTypeImage = !item.typeLogo || brokenImageMap[`type_${item.merchantId}`];
-    const useFallbackStoreImage = !item.storeLogo || brokenImageMap[`store_${item.merchantId}`];
-
+  const renderMerchantItem = useCallback(({ item }: { item: MerchantItem }) => {
     return (
-      <View style={styles.merchantCardOuter}>
-        <Pressable
-          disabled={isInactive}
-          style={[
-            styles.merchantCard,
-            isSelected && styles.merchantCardSelected,
-            isInactive && styles.merchantCardInactive,
-          ]}
-          onPress={() => {
-            if (isInactive) return;
-            setSelectedMerchantId(item.merchantId);
-            if (error) setError("");
-          }}
-        >
-          <View style={styles.merchantCardBody}>
-            {/* Left: Type Logo */}
-            <View style={styles.merchantCardLeft}>
-              <View style={styles.merchantIconWrap}>
-                <Image
-                  source={useFallbackTypeImage ? fallbackMerchantIcon : { uri: item.typeLogo }}
-                  style={styles.merchantIcon}
-                  resizeMode="contain"
-                  onError={() => {
-                    setBrokenImageMap((prev) => ({ ...prev, [`type_${item.merchantId}`]: true }));
-                  }}
-                />
-              </View>
-
-              {/* Center: Merchant Info */}
-              <View style={styles.merchantInfo}>
-                <Text style={styles.merchantName} numberOfLines={1}>
-                  {item.merchantName}
-                </Text>
-                <Text style={styles.merchantCategory} numberOfLines={1}>
-                  {item.storeType || "Retail"}
-                </Text>
-                {item.distance !== undefined && (
-                  <Text style={styles.distanceText}>
-                    {item.distance.toFixed(1)} km away
-                  </Text>
-                )}
-              </View>
-            </View>
-
-            {/* Right: Store Logo + Status */}
-            <View style={styles.merchantThumbWrap}>
-              <Image
-                source={useFallbackStoreImage ? fallbackMerchantIcon : { uri: item.storeLogo }}
-                style={styles.merchantThumb}
-                resizeMode="cover"
-                onError={() => {
-                  setBrokenImageMap((prev) => ({ ...prev, [`store_${item.merchantId}`]: true }));
-                }}
-              />
-              <View style={[styles.statusBadge, isInactive && styles.statusBadgeInactive]}>
-                <Text style={styles.statusBadgeText}>
-                  {isInactive ? "CLOSED" : isSelected ? "NOW OPEN" : "OPEN"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-
-        {isSelected && (
-          <View style={styles.checkmarkBadge}>
-            <Ionicons name="checkmark" size={13} color="#FFF" />
-          </View>
-        )}
-      </View>
+      <MerchantCard
+        item={item}
+        isSelected={item.merchantId === selectedMerchantId}
+        onPress={(id) => {
+          setSelectedMerchantId(id);
+          if (error) setError("");
+        }}
+      />
     );
-  };
+  }, [selectedMerchantId, error]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -326,11 +334,7 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
         >
           {/* Navbar — rmtechlogo.png centered */}
           <View style={styles.navbar}>
-            <Image
-              source={rmLogo}
-              style={styles.navbarLogo}
-              resizeMode="cover"
-            />
+
           </View>
 
           {/* Banner */}
@@ -396,8 +400,14 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
                 keyExtractor={(item) => String(item.merchantId)}
                 renderItem={renderMerchantItem}
                 contentContainerStyle={styles.listContent}
+                ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={8}
+                updateCellsBatchingPeriod={30}
+                windowSize={10}
+                initialNumToRender={8}
                 ListEmptyComponent={
                   <View style={styles.stateWrap}>
                     <Text style={styles.stateText}>No merchants match your search.</Text>
@@ -413,8 +423,8 @@ const MerchantSetupScreen: React.FC<MerchantSetupScreenProps> = ({ navigation })
               {
                 paddingBottom:
                   Platform.OS === "android"
-                    ? Math.max(insets.bottom, 16)
-                    : Math.max(insets.bottom, 8),
+                    ? Math.max(insets.bottom, 3)
+                    : Math.max(insets.bottom, 5),
               },
             ]}
           >
@@ -491,33 +501,29 @@ const styles = StyleSheet.create({
   // ── Navbar ──────────────────────────────────────────────
   navbar: {
     backgroundColor: "#FFFFFF",
-    paddingTop: 34,
+    paddingTop: 24,
     borderBottomWidth: 1,
     borderBottomColor: "#EBEBEB",
     alignItems: "center",
     justifyContent: "center",
   },
-  navbarLogo: {
-    width: 240,
-    height: 76,
-  },
 
   // ── Banner ──────────────────────────────────────────────
   bannerWrap: {
     marginHorizontal: 0,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     overflow: "hidden",
   },
   banner: {
     width: "100%",
-    height: 140,
+    height: 175,
   },
 
   // ── Section heading ─────────────────────────────────────
   sectionHeader: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 7,
     paddingBottom: 5,
   },
   sectionTitle: {
@@ -566,7 +572,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     marginHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   searchInput: {
     flex: 1,
@@ -581,7 +587,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 12,
-    gap: 10,
+  },
+  itemSeparator: {
+    height: 5,
   },
 
   // ── Merchant card ────────────────────────────────────────
